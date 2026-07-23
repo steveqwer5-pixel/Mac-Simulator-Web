@@ -3,453 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mac Simulator - macOS Experience on Windows</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <title>Mac Simulator - FireMew0K</title>
     <style>
-        /* ==================== 1. 全局与变量定义 ==================== */
+        /* ==================== 1. 全局样式与变量 ==================== */
         :root {
-            --bg-dark: #080810;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-hover-border: rgba(0, 113, 227, 0.5);
             --accent-blue: #0071e3;
-            --accent-glow: rgba(0, 113, 227, 0.4);
-            --accent-purple: #9d4edd;
+            --accent-cyan: #00f2fe;
+            --accent-purple: #7928ca;
+            --bg-black: #030308;
+            --card-bg: rgba(20, 20, 35, 0.65);
+            --card-border: rgba(255, 255, 255, 0.12);
             --text-main: #f5f5f7;
             --text-sub: #a1a1a6;
-            --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-            --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --ease-out-smooth: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            user-select: none;
         }
 
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-dark);
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-black);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--text-main);
-            overflow-x: hidden;
-            line-height: 1.6;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(157, 78, 221, 0.15), transparent 50%),
-                radial-gradient(circle at 80% 60%, rgba(0, 113, 227, 0.12), transparent 40%);
-            background-attachment: fixed;
         }
 
-        /* 动态背景科技网格 */
-        body::before {
-            content: "";
+        /* 动态背景 Canvas */
+        #bg-canvas {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: -2;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
             pointer-events: none;
         }
 
-        /* 鼠标跟随科技光晕 */
-        #cursor-glow {
+        /* ==================== 2. 开场：呼吸光圈与 3D 穿越 ==================== */
+        #portal-container {
             position: fixed;
-            width: 500px;
-            height: 500px;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            perspective: 1000px;
+        }
+
+        /* 呼吸光圈 */
+        .breath-ring-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: opacity 0.5s ease;
+        }
+
+        .breath-ring {
+            width: 240px;
+            height: 240px;
             border-radius: 50%;
-            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.05) 0%, transparent 60%);
+            border: 2px solid rgba(0, 242, 254, 0.8);
+            box-shadow: 
+                0 0 30px var(--accent-cyan),
+                0 0 10px var(--accent-purple),
+                inset 0 0 20px var(--accent-cyan);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: ringBreath 3.5s ease-in-out infinite;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .breath-ring-wrapper:hover .breath-ring {
+            transform: scale(1.08);
+            box-shadow: 
+                0 0 60px var(--accent-cyan),
+                0 0 30px var(--accent-purple),
+                inset 0 0 30px var(--accent-cyan);
+        }
+
+        .ring-click-hint {
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: #ffffff;
+            text-shadow: 0 0 12px var(--accent-cyan);
+        }
+
+        @keyframes ringBreath {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 25px var(--accent-cyan), 0 0 8px var(--accent-purple), inset 0 0 15px var(--accent-cyan);
+                border-color: rgba(0, 242, 254, 0.6);
+            }
+            50% {
+                transform: scale(1.06);
+                box-shadow: 0 0 65px var(--accent-cyan), 0 0 35px var(--accent-purple), inset 0 0 40px var(--accent-cyan);
+                border-color: rgba(121, 40, 202, 0.9);
+            }
+        }
+
+        /* 3D 隧道成就卡片（修正：默认 display: none 彻底防止闪现） */
+        .warp-tunnel {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
             pointer-events: none;
-            z-index: -1;
-            transition: transform 0.1s ease-out;
-            opacity: 0.6;
+            display: none; 
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .achievement-card {
+            position: absolute;
+            width: 280px;
+            padding: 20px;
+            background: rgba(10, 10, 25, 0.85);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 16px;
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+            color: #fff;
+            backdrop-filter: blur(15px);
+        }
+
+        .achievement-card.left { left: 12vw; }
+        .achievement-card.right { right: 12vw; }
+
+        .achievement-card h4 {
+            color: var(--accent-cyan);
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+        }
+
+        .achievement-card p {
+            font-size: 0.88rem;
+            color: var(--text-sub);
+        }
+
+        /* 全屏过场闪光 */
+        #warp-flash {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #ffffff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            transition: opacity 0.5s ease-out;
+        }
+
+        /* ==================== 3. 主页内容 ==================== */
+        #main-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 5;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+
+        #main-content.active {
+            opacity: 1;
+            visibility: visible;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1050px;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 80px 24px 60px;
         }
 
-        /* ==================== 2. 语言切换栏 ==================== */
-        .lang-nav {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 100;
-            display: flex;
-            gap: 8px;
-            background: rgba(20, 20, 30, 0.6);
-            backdrop-filter: blur(20px);
-            padding: 6px;
-            border-radius: 30px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .lang-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-sub);
-            padding: 6px 14px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.3s var(--ease-out-smooth);
-        }
-
-        .lang-btn:hover {
-            color: var(--text-main);
-        }
-
-        .lang-btn.active {
-            background: var(--accent-blue);
-            color: #fff;
-            box-shadow: 0 2px 12px var(--accent-glow);
-        }
-
-        /* ==================== 3. HERO 主视觉区 ==================== */
         .hero {
-            min-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             text-align: center;
-            padding-top: 60px;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
-            background: rgba(0, 113, 227, 0.1);
-            border: 1px solid rgba(0, 113, 227, 0.3);
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: #2997ff;
-            margin-bottom: 24px;
-            backdrop-filter: blur(10px);
-            animation: pulse 2s infinite ease-in-out;
+            margin-bottom: 60px;
         }
 
         .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #ffffff 30%, rgba(255, 255, 255, 0.5) 100%);
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 40%, var(--accent-cyan) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
-        .hero .subtitle {
-            font-size: clamp(1.1rem, 2vw, 1.35rem);
+        .hero p {
+            font-size: 1.2rem;
             color: var(--text-sub);
-            max-width: 650px;
-            margin-bottom: 40px;
         }
 
-        .cta-group {
+        .btn-group {
             display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
             justify-content: center;
+            gap: 16px;
+            margin-top: 30px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            position: relative;
-            padding: 14px 32px;
+            padding: 12px 28px;
             border-radius: 30px;
-            text-decoration: none;
+            font-size: 0.95rem;
             font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s var(--ease-out-back);
+            text-decoration: none;
+            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            overflow: hidden;
         }
 
         .btn-primary {
-            background: var(--accent-blue);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
             color: #fff;
-            box-shadow: 0 4px 20px var(--accent-glow);
+            box-shadow: 0 4px 20px rgba(0, 113, 227, 0.4);
         }
 
         .btn-primary:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 30px rgba(0, 113, 227, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 113, 227, 0.7);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
             border: 1px solid var(--card-border);
-            backdrop-filter: blur(10px);
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-3px);
-            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.16);
+            transform: translateY(-2px);
         }
 
-        /* ==================== 4. 3D 玻璃组件卡片 ==================== */
-        .features {
-            padding: 80px 0;
-        }
-
+        /* 功能卡片 */
         .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
             text-align: center;
-            font-size: 2rem;
-            margin-bottom: 48px;
-            font-weight: 600;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
+            margin-bottom: 60px;
         }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 36px;
+            border-radius: 20px;
+            padding: 28px;
             backdrop-filter: blur(20px);
-            transition: transform 0.2s ease-out, border-color 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            transform-style: preserve-3d;
-            perspective: 1000px;
+            transition: all 0.3s ease;
         }
 
         .card:hover {
-            border-color: var(--card-hover-border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
+            border-color: var(--accent-cyan);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
         }
 
         .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            display: inline-block;
+            font-size: 2rem;
+            margin-bottom: 12px;
         }
 
         .card h3 {
-            font-size: 1.35rem;
-            margin-bottom: 12px;
-            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 10px;
         }
 
         .card p {
             color: var(--text-sub);
-            font-size: 0.95rem;
+            font-size: 0.92rem;
         }
 
-        /* 关于区域 */
-        .about-box {
-            margin-top: 60px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(0, 113, 227, 0.05));
+        /* 使用指南 */
+        .usage-box {
+            background: rgba(15, 15, 30, 0.8);
             border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 48px;
-            text-align: center;
-            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 60px;
         }
 
-        .about-box p {
+        .usage-box ol {
+            padding-left: 20px;
             color: var(--text-sub);
-            font-size: 1.1rem;
-            max-width: 700px;
-            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .usage-box li strong {
+            color: var(--text-main);
         }
 
         footer {
             text-align: center;
-            padding: 40px 0;
+            padding: 30px 0;
             color: var(--text-sub);
-            font-size: 0.9rem;
             border-top: 1px solid var(--card-border);
-            margin-top: 60px;
+            font-size: 0.9rem;
         }
 
         footer a {
-            color: #2997ff;
+            color: var(--accent-cyan);
             text-decoration: none;
-        }
-
-        /* ==================== 5. 缓入缓出动画定义 ==================== */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s var(--ease-out-smooth), transform 0.8s var(--ease-out-smooth);
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.8; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.03); }
         }
     </style>
 </head>
 <body>
 
-    <div id="cursor-glow"></div>
+    <canvas id="bg-canvas"></canvas>
 
-    <nav class="lang-nav">
-        <button class="lang-btn active" onclick="switchLang('zh', this)">中文</button>
-        <button class="lang-btn" onclick="switchLang('en', this)">English</button>
-        <button class="lang-btn" onclick="switchLang('pt', this)">Português</button>
-    </nav>
+    <div id="warp-flash"></div>
 
-    <header class="hero container fade-in">
-        <div class="badge" 
-             data-zh="⚡ 体验 macOS 的极简审美" 
-             data-en="⚡ Experience macOS Aesthetics" 
-             data-pt="⚡ Experimente a estética do macOS">
-            ⚡ 体验 macOS 的极简审美
+    <div id="portal-container">
+        <div class="breath-ring-wrapper" id="start-btn">
+            <div class="breath-ring">
+                <span class="ring-click-hint">点击开启</span>
+            </div>
         </div>
-        
-        <h1> Mac Simulator</h1>
-        
-        <p class="subtitle" 
-           data-zh="在 Windows 上还原 macOS 的界面与经典交互体验。" 
-           data-en="Recreate the macOS interface and classic features on Windows." 
-           data-pt="Recrie a interface e as funcionalidades do macOS no seu Windows.">
-            在 Windows 上还原 macOS 的界面与经典交互体验。
-        </p>
 
-        <div class="cta-group">
-            <a href="https://github.com/steveqwer5-pixel/Mac-Simulator/releases" class="btn btn-primary" target="_blank"
-               data-zh="🚀 立即下载 (Releases)"
-               data-en="🚀 Download Now (Releases)"
-               data-pt="🚀 Baixar Agora (Releases)">
-                🚀 立即下载 (Releases)
-            </a>
-            <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" class="btn btn-secondary" target="_blank"
-               data-zh="⭐ GitHub 仓库"
-               data-en="⭐ View on GitHub"
-               data-pt="⭐ Ver no GitHub">
-                ⭐ GitHub 仓库
-            </a>
+        <div class="warp-tunnel" id="tunnel">
+            <div class="achievement-card left" style="top: 25%; transform: translateZ(-800px);">
+                <h4>🏆 突破 1: Spotlight 极速调出</h4>
+                <p>响应零延迟，具备 NOACTIVATE 窗口特性，绝不强占焦点。</p>
+            </div>
+            <div class="achievement-card right" style="top: 45%; transform: translateZ(-1600px);">
+                <h4>🏝️ 突破 2: WinIsland 动态灵动岛</h4>
+                <p>贴合顶栏，融入弹性缓动算法，支持画幅音波与本地专辑封面。</p>
+            </div>
+            <div class="achievement-card left" style="top: 65%; transform: translateZ(-2400px);">
+                <h4>⚓ 突破 3: 全面兼容 Dockfinder</h4>
+                <p>与 Steam 热门组件打通，零冲突实现原生 macOS 级沉浸体验。</p>
+            </div>
         </div>
-    </header>
+    </div>
 
-    <main class="container">
-        <section class="features">
-            <h2 class="section-title fade-in" 
-                data-zh="已发布核心组件" 
-                data-en="Released Components" 
-                data-pt="Recursos em Destaque">
-                已发布核心组件
-            </h2>
+    <div id="main-content">
+        <div class="container">
+            <header class="hero">
+                <h1>Mac Simulator</h1>
+                <p>在 Windows 上原生还原 macOS 的极致视觉与高效交互</p>
 
+                <div class="btn-group">
+                    <a href="https://github.com/steveqwer5-pixel/Mac-Simulator/releases" class="btn btn-primary" target="_blank">
+                        🚀 立即下载最新 Release
+                    </a>
+                    <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" class="btn btn-secondary" target="_blank">
+                        ⭐ GitHub 开源仓库
+                    </a>
+                </div>
+            </header>
+
+            <h2 class="section-title">核心部件</h2>
             <div class="grid">
-                <div class="card fade-in">
+                <div class="card">
                     <div class="card-icon">🔍</div>
-                    <h3>Spotlight</h3>
-                    <p data-zh="极简快捷搜索与交互窗口，响应迅速，采用物理透明混合渲染，绝不抢占系统焦点。"
-                       data-en="Minimalist quick search and interaction overlay, ultra-responsive without taking system focus."
-                       data-pt="Barra de pesquisa e navegação rápida inspirada no macOS. Leve e responsiva.">
-                        极简快捷搜索与交互窗口，响应迅速，采用物理透明混合渲染，绝不抢占系统焦点。
-                    </p>
+                    <h3>Spotlight.exe</h3>
+                    <p>macOS 经典极简快捷搜索悬浮栏，即调即用，轻量纯粹。</p>
                 </div>
-
-                <div class="card fade-in">
+                <div class="card">
                     <div class="card-icon">🏝️</div>
-                    <h3>Island</h3>
-                    <p data-zh="贴合屏幕顶部的悬浮灵动岛，集成日历、时钟与音频控制，具备物理阻尼弹簧动效。"
-                       data-en="Dynamic notch / island attached to top of screen with calendar, clock, and audio controls with elastic animations."
-                       data-pt="Notch/Dynamic Island na parte superior da tela com integração fluida e animações dinâmicas.">
-                        贴合屏幕顶部的悬浮灵动岛，集成日历、时钟与音频控制，具备物理阻尼弹簧动效。
-                    </p>
+                    <h3>WinIsland.exe</h3>
+                    <p>顶栏悬浮灵动岛，支持日历、实时时钟与音乐播放控制器。</p>
                 </div>
-
-                <div class="card fade-in">
+                <div class="card">
                     <div class="card-icon">⚓</div>
-                    <h3 data-zh="Dock & Finder 兼容" data-en="Dock & Finder Compatible" data-pt="Compatível com Dockfinder">Dock & Finder 兼容</h3>
-                    <p data-zh="Dock 与 Finder 推荐搭配 Steam 上的 Dockfinder 使用，本项目完美兼容与配合联动。"
-                       data-en="For Dock & Finder, simply use Steam's Dockfinder. Fully compatible and seamless!"
-                       data-pt="Integração e compatibilidade perfeita com o Dockfinder da Steam para uma experiência completa.">
-                        Dock 与 Finder 推荐配合 Steam 上的 Dockfinder 使用，本项目完美兼容与配合联动。
-                    </p>
+                    <h3>Dockfinder 联动</h3>
+                    <p>推荐配合 Steam 上的 Dockfinder 使用，构建完美的 Mac 桌面体验。</p>
                 </div>
             </div>
 
-            <div class="about-box fade-in">
-                <h2 style="margin-bottom: 16px; font-weight: 600;" 
-                    data-zh="纯粹由兴趣驱动" 
-                    data-en="Fueled Purely by Passion" 
-                    data-pt="Movido por Paixão">
-                    纯粹由兴趣驱动
-                </h2>
-                <p data-zh="无需折腾复杂的黑苹果（Hackintosh），也能在原生 Windows 系统上体验 macOS 的精致设计语言与极致桌面交互。"
-                   data-en="Experience Mac aesthetics without needing a complex Hackintosh setup. Pure, lightweight, and native."
-                   data-pt="Experimente a estética do Mac no seu Windows sem precisar de um Hackintosh complexo.">
-                    无需折腾复杂的黑苹果（Hackintosh），也能在原生 Windows 系统上体验 macOS 的精致设计语言与极致桌面交互。
-                </p>
+            <div class="usage-box">
+                <h3 style="margin-bottom: 16px; font-size: 1.3rem;">💡 快速上手指南</h3>
+                <ol>
+                    <li>点击下方或顶部的 <strong>[立即下载]</strong> 前往 GitHub Releases 页面。</li>
+                    <li>直接下载项目仓库中的 <code>WinIsland.exe</code> 与 <code>Spotlight.exe</code>。</li>
+                    <li>双击运行即可使用，无需解压或安装，纯绿色软件。</li>
+                    <li>（可选）将 1:1 比例的专辑图片命名为 <code>cover.jpg</code> 放在同级目录下，WinIsland 可自动读取显示。</li>
+                </ol>
             </div>
-        </section>
-    </main>
 
-    <footer>
-        <p>Created by <a href="https://github.com/steveqwer5-pixel" target="_blank">steveqwer5-pixel</a> | Source on <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" target="_blank">GitHub</a></p>
-    </footer>
+            <footer>
+                <p>Designed & Developed by <strong>FireMew0K</strong> | Project hosted on <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" target="_blank">GitHub</a></p>
+            </footer>
+        </div>
+    </div>
 
     <script>
-        // 1. 鼠标跟随光晕效果
-        const glow = document.getElementById('cursor-glow');
-        window.addEventListener('mousemove', (e) => {
-            glow.style.left = `${e.clientX}px`;
-            glow.style.top = `${e.clientY}px`;
+        // 1. 星空背景
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
         });
 
-        // 2. 3D 悬浮倾斜（Card Tilt Effect）
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-                
-                card.style.transform = `perspective(1000px) rotateX(${-y / 15}deg) rotateY(${x / 15}deg) translateY(-8px)`;
-            });
+        const stars = [];
+        const starCount = 280;
+        let speed = 0.5;
 
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
-            });
-        });
-
-        // 3. 滚动缓入观察器 (IntersectionObserver)
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-
-        // 4. 语言无缝切换
-        function switchLang(lang, btn) {
-            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            document.querySelectorAll('[data-' + lang + ']').forEach(el => {
-                el.style.opacity = '0';
-                setTimeout(() => {
-                    el.innerText = el.getAttribute('data-' + lang);
-                    el.style.opacity = '1';
-                }, 150);
+        for (let i = 0; i < starCount; i++) {
+            stars.push({
+                x: (Math.random() - 0.5) * width * 2,
+                y: (Math.random() - 0.5) * height * 2,
+                z: Math.random() * width,
+                size: Math.random() * 1.5
             });
         }
+
+        function drawStars() {
+            ctx.fillStyle = '#030308';
+            ctx.fillRect(0, 0, width, height);
+
+            const cx = width / 2;
+            const cy = height / 2;
+
+            for (let i = 0; i < starCount; i++) {
+                let star = stars[i];
+                star.z -= speed;
+
+                if (star.z <= 0) {
+                    star.z = width;
+                    star.x = (Math.random() - 0.5) * width * 2;
+                    star.y = (Math.random() - 0.5) * height * 2;
+                }
+
+                let k = 250 / star.z;
+                let px = star.x * k + cx;
+                let py = star.y * k + cy;
+
+                if (px >= 0 && px <= width && py >= 0 && py <= height) {
+                    let size = (1 - star.z / width) * 2.2 * star.size;
+                    let alpha = (1 - star.z / width);
+                    ctx.fillStyle = `rgba(0, 242, 254, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size > 0 ? size : 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        // 2. 修正后的精确穿越动画逻辑
+        const startBtn = document.getElementById('start-btn');
+        const tunnel = document.getElementById('tunnel');
+        const cards = document.querySelectorAll('.achievement-card');
+        const flash = document.getElementById('warp-flash');
+        const portalContainer = document.getElementById('portal-container');
+        const mainContent = document.getElementById('main-content');
+
+        startBtn.addEventListener('click', () => {
+            // 淡出光圈
+            startBtn.style.opacity = '0';
+            startBtn.style.pointerEvents = 'none';
+
+            // 显示 3D 隧道（只在点击后激活）
+            tunnel.style.display = 'block';
+            setTimeout(() => { tunnel.style.opacity = '1'; }, 20);
+
+            // 粒子加速
+            let acceleration = setInterval(() => {
+                if (speed < 32) speed += 1.2;
+            }, 50);
+
+            // 3D 卡片依序推进
+            let posZ = [-1000, -1800, -2600];
+            let warpInterval = setInterval(() => {
+                cards.forEach((card, idx) => {
+                    posZ[idx] += 28;
+                    card.style.transform = `translateZ(${posZ[idx]}px)`;
+                });
+            }, 16);
+
+            // 闪光过场并进入主页
+            setTimeout(() => {
+                flash.style.opacity = '1';
+                setTimeout(() => {
+                    clearInterval(acceleration);
+                    clearInterval(warpInterval);
+                    speed = 0.8;
+                    
+                    portalContainer.style.display = 'none';
+                    mainContent.classList.add('active');
+                    
+                    setTimeout(() => {
+                        flash.style.opacity = '0';
+                    }, 200);
+                }, 400);
+            }, 2400);
+        });
     </script>
 </body>
 </html>
