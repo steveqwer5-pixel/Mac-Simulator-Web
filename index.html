@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mac Simulator - macOS Interface for Windows</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="lang-switcher">
+        <button onclick="setLanguage('zh')">中文</button>
+        <button onclick="setLanguage('en')">English</button>
+        <button onclick="setLanguage('pt')">Português</button>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <h1> Mac Simulator</h1>
+            <p class="tagline" data-zh="在 Windows 上还原 macOS 的界面与功能体验。"
+               data-en="Recreate the macOS interface and features on Windows."
+               data-pt="Recrie a interface e as funcionalidades do macOS no seu Windows.">
+                在 Windows 上还原 macOS 的界面与功能体验。
+            </p>
+            
+            <div class="cta-buttons">
+                <a href="https://github.com/steveqwer5-pixel/Mac-Simulator/releases" class="btn btn-primary" target="_blank"
+                   data-zh="🚀 立即下载 (Releases)"
+                   data-en="🚀 Download Now (Releases)"
+                   data-pt="🚀 Baixar Agora (Releases)">
+                    🚀 立即下载 (Releases)
+                </a>
+                <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" class="btn btn-secondary" target="_blank"
+                   data-zh="⭐ GitHub 仓库"
+                   data-en="⭐ View on GitHub"
+                   data-pt="⭐ Ver no GitHub">
+                    ⭐ GitHub 仓库
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="features">
+            <h2 data-zh="已发布组件" data-en="Released Components" data-pt="Recursos em Destaque">已发布组件</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>🔍 Spotlight</h3>
+                    <p data-zh="极简快捷搜索与交互窗口，响应迅速，不强占鼠标焦点。"
+                       data-en="Minimalist quick search and interaction overlay, highly responsive without taking focus."
+                       data-pt="Barra de pesquisa e navegação rápida inspirada no macOS. Leve e responsiva.">
+                        极简快捷搜索与交互窗口，响应迅速，不强占鼠标焦点。
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>🏝️ Island</h3>
+                    <p data-zh="贴合屏幕顶部的动态灵动岛，集成日历、时钟与音频控制面板。"
+                       data-en="Dynamic notch / island attached to top of screen with calendar, clock, and audio controls."
+                       data-pt="Notch/Dynamic Island na parte superior da tela com integração fluida e controles visuais.">
+                        贴合屏幕顶部的动态灵动岛，集成日历、时钟与音频控制面板。
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>⚓ Dockfinder 兼容</h3>
+                    <p data-zh="Dock 与 Finder 推荐配合 Steam 上的 Dockfinder 使用，本项目完美兼容。"
+                       data-en="For Dock & Finder, simply use Steam's Dockfinder. Fully compatible!"
+                       data-pt="Integração e compatibilidade perfeita com o Dockfinder da Steam para uma experiência completa.">
+                        Dock 与 Finder 推荐配合 Steam 上的 Dockfinder 使用，本项目完美兼容。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="about">
+            <h2 data-zh="关于本项目" data-en="About Project" data-pt="Sobre o Projeto">关于本项目</h2>
+            <p data-zh="纯粹靠兴趣支撑更新！无需折腾黑苹果（Hackintosh），也能在 Windows 上体验 Mac 的精致审美与高效交互。"
+               data-en="Fueled purely by passion and interest! Experience Mac aesthetics without needing a Hackintosh."
+               data-pt="Movido puramente por paixão e interesse! Experimente a estética do Mac sem precisar de um Hackintosh.">
+                纯粹靠兴趣支撑更新！无需折腾黑苹果（Hackintosh），也能在 Windows 上体验 Mac 的精致审美与高效交互。
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Created by <a href="https://github.com/steveqwer5-pixel" target="_blank">steveqwer5-pixel</a> | Source code on <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" target="_blank">GitHub</a>.</p>
+        </div>
+    </footer>
+
+    <script>
+        function setLanguage(lang) {
+            const elements = document.querySelectorAll('[data-' + lang + ']');
+            elements.forEach(el => {
+                el.innerText = el.getAttribute('data-' + lang);
+            });
+        }
+    </script>
+</body>
+</html>
