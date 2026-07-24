@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目 Wiki - Mac Simulator 留言与反馈系统</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-cyan: #38bdf8;
+            --accent-purple: #c084fc;
+            --accent-green: #4ade80;
+            --code-bg: #0f172a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            display: flex;
+        }
+
+        /* 侧边栏导航 */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            top: 0; left: 0;
+            background: #090d16;
+            border-right: 1px solid var(--card-border);
+            padding: 30px 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 1.1rem;
+            color: var(--accent-cyan);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .sidebar ul { list-style: none; }
+        .sidebar li { margin-bottom: 12px; }
+        .sidebar a {
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        .sidebar a:hover { color: var(--accent-cyan); }
+
+        /* 主内容区 */
+        .content {
+            margin-left: 260px;
+            padding: 40px 60px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { color: var(--text-sub); margin-bottom: 40px; font-size: 1rem; }
+
+        section {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: var(--accent-cyan);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 { font-size: 1.1rem; color: #fff; margin: 20px 0 10px; }
+
+        p, li { color: #cbd5e1; font-size: 0.95rem; margin-bottom: 8px; }
+        ul, ol { padding-left: 20px; }
+
+        /* 代码块与高亮 */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            padding: 14px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        code {
+            font-family: "Fira Code", Monaco, Consolas, monospace;
+            color: var(--accent-purple);
+            font-size: 0.9rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        .table-custom th, .table-custom td {
+            border: 1px solid var(--card-border);
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .table-custom th {
+            background: #0f172a;
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>📚 项目目录 Wiki</h2>
+        <ul>
+            <li><a href="#overview">1. 项目简介</a></li>
+            <li><a href="#architecture">2. 系统架构图解</a></li>
+            <li><a href="#database">3. Supabase 数据库设计</a></li>
+            <li><a href="#auth-flow">4. 身份验证与权限控制</a></li>
+            <li><a href="#config">5. 关键环境变量配置</a></li>
+            <li><a href="#faq">6. 常见排查问题 (FAQ)</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h1>Mac Simulator 留言与反馈系统 Wiki</h1>
+        <p class="subtitle">文档版本：v1.0.0 | 基于 Supabase + GitHub OAuth + Vanilla JS 搭建</p>
+
+        <section id="overview">
+            <h2>1. 项目简介</h2>
+            <p>本项目为 <strong>Mac Simulator</strong> 网站的嵌入式留言与社区反馈模块。采用无服务器（Serverless / Pure Frontend）架构构建，前端无需自建后端 API 即可完成用户鉴权、数据持久化存储与权限隔离。</p>
+            <h3>核心功能列表：</h3>
+            <ul>
+                <li><span class="tag">身份认证</span> 支持通过 GitHub OAuth 完成无密第三方绑定登录。</li>
+                <li><span class="tag">数据交互</span> 实时显示社区留言列表，支持文本防 XSS 转义提交。</li>
+                <li><span class="tag">权限控制</span> 支持普通用户删除本人发布的留言；指定系统管理员 UID 拥有最高治理权限（可清理任意留言）。</li>
+            </ul>
+        </section>
+
+        <section id="architecture">
+            <h2>2. 系统架构图解</h2>
+            <p>系统整体采用轻量前端直连云数据库服务的模式：</p>
+            <pre><code>+------------------------+             +--------------------------+
+|  前端网页 (Client)     | --(OAuth)-->| GitHub 授权认证服务      |
+|  feedback.html         |             +--------------------------+
++------------------------+                           |
+          |                                          v
+          | (Supabase JS SDK)           +--------------------------+
+          +---------------------------->| Supabase Backend & Auth  |
+                                        +--------------------------+
+                                                     |
+                                                     v
+                                        +--------------------------+
+                                        | PostgreSQL (comments表)  |
+                                        +--------------------------+</code></pre>
+        </section>
+
+        <section id="database">
+            <h2>3. Supabase 数据库设计</h2>
+            <p>项目在 Supabase 中使用 PostgreSQL 数据库，核心数据表为 <code>comments</code>。</p>
+            
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>字段名 (Column)</th>
+                        <th>数据类型 (Type)</th>
+                        <th>主键/外键</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>bigint / int8</td>
+                        <td>PRIMARY KEY</td>
+                        <td>留言唯一 ID，自增主键</td>
+                    </tr>
+                    <tr>
+                        <td><code>created_at</code></td>
+                        <td>timestamptz</td>
+                        <td>-</td>
+                        <td>留言创建时间（默认值为 <code>now()</code>）</td>
+                    </tr>
+                    <tr>
+                        <td><code>user_id</code></td>
+                        <td>uuid</td>
+                        <td>FK -> auth.users.id</td>
+                        <td>对应 Supabase 用户系统中唯一 UID</td>
+                    </tr>
+                    <tr>
+                        <td><code>username</code></td>
+                        <td>text</td>
+                        <td>-</td>
+                        <td>发帖人的 GitHub 用户名</td>
+                    </tr>
+                    <tr>
+                        <td><code>avatar_url</code></td>
+                        <td>text</td>
+                        <td>-</td>
+                        <td>发帖人的 GitHub 官方头像直链</td>
+                    </tr>
+                    <tr>
+                        <td><code>content</code></td>
+                        <td>text</td>
+                        <td>-</td>
+                        <td>留言的具体正文内容</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="auth-flow">
+            <h2>4. 身份验证与权限控制</h2>
+            <h3>4.1 RLS (Row Level Security) 策略 SQL</h3>
+            <p>在 Supabase SQL Editor 中运行以下命令，确保数据安全性：</p>
+            <pre><code>-- 允许全员查询/读取留言
+create policy "Allow public read" on comments for select using (true);
+
+-- 允许已登录用户插入新留言
+create policy "Allow authenticated insert" on comments for insert with check (auth.role() = 'authenticated');
+
+-- 限制删除策略：仅限发布者本人 或 特权管理员 (指定 UID) 删除
+create policy "Allow user or admin delete" on comments 
+for delete using (
+  auth.uid() = user_id 
+  or 
+  auth.uid() = 'a36ece6a-25b8-4772-b404-4980a1958d5b'::uuid
+);</code></pre>
+
+            <h3>4.2 前端特权管理员鉴权逻辑</h3>
+            <p>前端脚本中硬编码设置系统大管理员常量：</p>
+            <pre><code>const ADMIN_UID = 'a36ece6a-25b8-4772-b404-4980a1958d5b';
+
+// 判断逻辑：当前登录用户的 UID 等于 ADMIN_UID 时，拥有全局删除权限
+const isAdmin = currentUser && currentUser.id === ADMIN_UID;
+const canDelete = isAdmin || (currentUser && currentUser.id === item.user_id);</code></pre>
+        </section>
+
+        <section id="config">
+            <h2>5. 关键环境变量配置</h2>
+            <p>前端部署在生产环境（例如 <code>https://msw.zapto.org/feedback.html</code>）时，需确保以下三端参数配置完全一致：</p>
+            <ol>
+                <li><strong>Supabase Authentication -> URL Configuration:</strong>
+                    <ul>
+                        <li><code>Site URL</code>: <code>https://msw.zapto.org</code></li>
+                        <li><code>Redirect URLs</code>: <code>https://msw.zapto.org/feedback.html</code></li>
+                    </ul>
+                </li>
+                <li><strong>GitHub Developer Settings -> OAuth App:</strong>
+                    <ul>
+                        <li><code>Authorization callback URL</code>: <code>https://&lt;你的项目ID&gt;.supabase.co/auth/v1/callback</code></li>
+                    </ul>
+                </li>
+                <li><strong>前端 JS 初始化参数：</strong>
+                    <ul>
+                        <li><code>SUPABASE_URL</code> 与 <code>SUPABASE_ANON_KEY</code>（公开密钥）配置于代码文件顶部。</li>
+                    </ul>
+                </li>
+            </ol>
+        </section>
+
+        <section id="faq">
+            <h2>6. 常见排查问题 (FAQ)</h2>
+            <h3>Q1: 为什么授权后返回页面提示未绑定？</h3>
+            <p>答：通常是因为域名未包含在 Supabase 的 <code>Redirect URLs</code> 白名单中，或者登录代码中未显式指定正确的 <code>redirectTo</code> 路径。</p>
+
+            <h3>Q2: 能否在前端暴露 <code>service_role</code> 密钥？</h3>
+            <p>答：<strong>绝对不能</strong>。<code>service_role</code> 密钥具备越过 RLS 规则的最高管理员权限，写在前端 JS 中会导致数据库容易被恶意攻击或清空。前端只需使用 <code>anon</code> 密钥。</p>
+        </section>
+
+    </div>
+
+</body>
+</html>
