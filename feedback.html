@@ -5,170 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="favicon.png">
     <title>留言反馈 - Mac Simulator</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         :root {
             --accent-blue: #0071e3;
             --accent-cyan: #00f2fe;
             --accent-purple: #7928ca;
             --bg-black: #030308;
-            --card-bg: rgba(20, 20, 35, 0.65);
+            --card-bg: rgba(20, 20, 35, 0.75);
             --card-border: rgba(255, 255, 255, 0.12);
             --text-main: #f5f5f7;
             --text-sub: #a1a1a6;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body, html {
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
+            width: 100%; height: 100%; overflow-x: hidden;
             background-color: var(--bg-black);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--text-main);
         }
 
         #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none;
         }
 
-        /* 顶部导航栏布局 */
         .top-nav {
-            position: fixed;
-            top: 20px;
-            left: 24px;
-            right: 24px;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            position: fixed; top: 20px; left: 24px; right: 24px; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
         }
 
         .nav-btn {
-            background: rgba(20, 20, 35, 0.75);
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 0.88rem;
-            cursor: pointer;
-            backdrop-filter: blur(15px);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
+            background: rgba(20, 20, 35, 0.75); color: var(--text-main);
+            border: 1px solid var(--card-border); padding: 8px 18px; border-radius: 20px;
+            font-size: 0.88rem; cursor: pointer; backdrop-filter: blur(15px); text-decoration: none;
         }
 
-        .nav-btn:hover {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-            color: #fff;
-        }
-
-        /* 绑定按钮（未登录时展示） */
         .btn-bind {
-            background: rgba(20, 20, 35, 0.75);
-            color: #fff;
-            border: 1px solid var(--card-border);
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            backdrop-filter: blur(15px);
-            transition: all 0.3s ease;
+            background: rgba(20, 20, 35, 0.75); color: #fff;
+            border: 1px solid var(--card-border); padding: 8px 18px; border-radius: 20px;
+            font-size: 0.88rem; font-weight: 600; cursor: pointer; backdrop-filter: blur(15px);
+            display: inline-flex; align-items: center; gap: 8px;
         }
 
-        .btn-bind:hover {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* 右上角 GitHub 用户头像与名称栏（已登录时展示） */
         .user-profile {
-            display: none; /* 默认隐藏，绑定后自动显示 */
-            align-items: center;
-            gap: 10px;
-            background: rgba(20, 20, 35, 0.75);
-            border: 1px solid var(--card-border);
-            padding: 5px 14px 5px 6px;
-            border-radius: 25px;
-            backdrop-filter: blur(15px);
+            display: none; align-items: center; gap: 10px;
+            background: rgba(20, 20, 35, 0.75); border: 1px solid var(--card-border);
+            padding: 5px 14px 5px 6px; border-radius: 25px; backdrop-filter: blur(15px);
         }
 
         .user-profile img {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 1px solid var(--accent-cyan);
-            object-fit: cover;
+            width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--accent-cyan);
         }
 
-        .user-profile span {
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: var(--text-main);
-        }
+        .container { max-width: 800px; margin: 0 auto; padding: 90px 24px 60px; position: relative; z-index: 5; }
 
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            padding: 90px 24px 60px;
-            position: relative;
-            z-index: 5;
-        }
-
-        .header-box {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
+        .header-box { text-align: center; margin-bottom: 30px; }
         .header-box h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
+            font-size: 2.2rem; font-weight: 700; margin-bottom: 10px;
             background: linear-gradient(135deg, #fff 40%, var(--accent-cyan) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .header-box p {
-            color: var(--text-sub);
-            font-size: 0.98rem;
+        .comment-form {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 20px; padding: 24px; backdrop-filter: blur(20px); margin-bottom: 30px;
         }
 
-        .comments-wrapper {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 30px;
-            backdrop-filter: blur(20px);
-            min-height: 350px;
+        .comment-textarea {
+            width: 100%; height: 100px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border); border-radius: 12px; padding: 14px;
+            color: #fff; font-size: 0.95rem; resize: none; outline: none; margin-bottom: 14px;
         }
 
-        footer {
-            text-align: center;
-            padding: 30px 0;
-            color: var(--text-sub);
-            font-size: 0.9rem;
-            margin-top: 40px;
+        .btn-submit {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #fff; border: none; padding: 10px 24px; border-radius: 20px;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer; float: right;
         }
+
+        .clearfix::after { content: ""; clear: both; display: table; }
+
+        .comments-list { display: flex; flex-direction: column; gap: 16px; }
+        .comment-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 20px; backdrop-filter: blur(20px);
+        }
+
+        .comment-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .comment-avatar { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--accent-cyan); }
+        .comment-author { font-weight: 600; font-size: 0.95rem; color: var(--accent-cyan); }
+        .comment-time { font-size: 0.78rem; color: var(--text-sub); margin-left: auto; }
+        .comment-body { color: var(--text-main); font-size: 0.95rem; line-height: 1.6; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -196,131 +128,114 @@
     <div class="container">
         <div class="header-box">
             <h1>💬 社区留言与反馈</h1>
-            <p>绑定账号后即可发表留言，自动带上你的用户名与精准时间</p>
+            <p>输入留言直接保存至 Supabase 托管数据库</p>
         </div>
 
-        <div class="comments-wrapper" id="commentBox">
-            <script src="https://giscus.app/client.js"
-                    data-repo="steveqwer5-pixel/Mac-Simulator"
-                    data-repo-id="R_kgDORpQ-Xg"
-                    data-category="Announcements"
-                    data-category-id="DIC_kwDORpQ-Xs4C1234"
-                    data-mapping="pathname"
-                    data-strict="0"
-                    data-reactions-enabled="1"
-                    data-emit-metadata="1"
-                    data-input-position="top"
-                    data-theme="transparent_dark"
-                    data-lang="zh-CN"
-                    crossorigin="anonymous"
-                    async>
-            </script>
+        <div class="comment-form clearfix">
+            <textarea id="commentText" class="comment-textarea" placeholder="写下你的意见或建议..."></textarea>
+            <button class="btn-submit" onclick="postComment()">发布留言</button>
         </div>
 
-        <footer>
-            <p>Designed & Developed by <strong>FireMew0K</strong> | Mac Simulator</p>
-        </footer>
+        <div class="comments-list" id="commentsContainer">
+            <p style="text-align: center; color: var(--text-sub);">正在加载留言列表...</p>
+        </div>
     </div>
 
     <script>
-        const CLIENT_ID = "Ov23li1PI8t6KfDmNAUe"; // 替换为你的 GitHub Client ID
+        // 配置你的 GitHub OAuth 与 Supabase 参数
+        const GITHUB_CLIENT_ID = 'wswJPBv1evX9Wxfe'; 
+        const SUPABASE_URL = 'https://pexsmwuqnwkvmmmodamt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_ac-ERarehijW_Kkox5rEYw_vmdgatve';
 
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+
+        // 1. 点击绑定，直接跳 GitHub，授权完直接跳回本网站地址
         function loginWithGithub() {
-            const redirectUri = window.location.href.split('?')[0]; 
-            const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=read:user`;
-            window.location.href = githubAuthUrl;
+            const redirectUri = window.location.origin + window.location.pathname;
+            window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=read:user`;
         }
 
-        // 页面加载时检查本地是否有缓存的 GitHub 登录状态
+        // 2. 初始化加载：检查本地缓存与拉取数据库里的留言
         window.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('github_user');
-            if (savedUser) {
-                const user = JSON.parse(savedUser);
-                showUserProfile(user.login, user.avatarUrl);
-            }
+            fetchComments();
+            checkUser();
         });
 
-        // 绑定成功后切换右上角的显示 UI
-        function showUserProfile(username, avatarUrl) {
-            document.getElementById('btnBindGithub').style.display = 'none'; // 隐藏绑定按钮
-            const profile = document.getElementById('userProfile');
-            document.getElementById('navAvatar').src = avatarUrl;
-            document.getElementById('navUsername').innerText = username;
-            profile.style.display = 'inline-flex'; // 显示右上角头像和用户名
+        function checkUser() {
+            const savedUser = localStorage.getItem('gh_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                document.getElementById('btnBindGithub').style.display = 'none';
+                document.getElementById('navUsername').innerText = currentUser.username;
+                document.getElementById('navAvatar').src = currentUser.avatarUrl;
+                document.getElementById('userProfile').style.display = 'inline-flex';
+            }
         }
 
-        // 监听评论组件发来的登录成功广播消息
-        window.addEventListener('message', (event) => {
-            if (event.origin !== 'https://giscus.app') return;
-            if (!(typeof event.data === 'object' && event.data.giscus)) return;
-
-            const giscusData = event.data.giscus;
-            if (giscusData.viewer) {
-                const user = giscusData.viewer;
-                // 保存数据至本地
-                localStorage.setItem('github_user', JSON.stringify({
-                    login: user.login,
-                    avatarUrl: user.avatarUrl
-                }));
-                // 切换 UI
-                showUserProfile(user.login, user.avatarUrl);
+        // 3. 从 Supabase 数据库拉取数据并展示
+        async function fetchComments() {
+            const { data, error } = await db.from('comments').select('*').order('created_at', { ascending: false });
+            const container = document.getElementById('commentsContainer');
+            if (error || !data || data.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-sub);">暂无留言，快来抢沙发吧！</p>';
+                return;
             }
-        });
+            container.innerHTML = data.map(item => `
+                <div class="comment-card">
+                    <div class="comment-header">
+                        <img src="${item.avatar_url}" class="comment-avatar">
+                        <span class="comment-author">${item.username}</span>
+                        <span class="comment-time">${new Date(item.created_at).toLocaleString()}</span>
+                    </div>
+                    <div class="comment-body">${escapeHtml(item.content)}</div>
+                </div>
+            `).join('');
+        }
 
-        // 星空动画背景
+        // 4. 将留言写入 Supabase 托管数据库
+        async function postComment() {
+            if (!currentUser) {
+                alert('请先绑定 GitHub 账号后再留言！');
+                return;
+            }
+            const textarea = document.getElementById('commentText');
+            const content = textarea.value.trim();
+            if (!content) return alert('内容不能为空！');
+
+            const { error } = await db.from('comments').insert([{
+                username: currentUser.username,
+                avatar_url: currentUser.avatarUrl,
+                content: content
+            }]);
+
+            if (error) {
+                alert('留言失败: ' + error.message);
+            } else {
+                textarea.value = '';
+                fetchComments(); // 重新加载 Supabase 数据列表
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+        }
+
+        // 背景星空画板
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
-
-        const stars = [];
-        const starCount = 280;
-        let speed = 0.8;
-
-        for (let i = 0; i < starCount; i++) {
-            stars.push({
-                x: (Math.random() - 0.5) * width * 2,
-                y: (Math.random() - 0.5) * height * 2,
-                z: Math.random() * width,
-                size: Math.random() * 1.5
-            });
-        }
-
+        let width = canvas.width = window.innerWidth, height = canvas.height = window.innerHeight;
+        const stars = Array.from({length: 200}, () => ({ x: (Math.random()-0.5)*width*2, y: (Math.random()-0.5)*height*2, z: Math.random()*width, size: Math.random()*1.5 }));
         function drawStars() {
-            ctx.fillStyle = '#030308';
-            ctx.fillRect(0, 0, width, height);
-
-            const cx = width / 2;
-            const cy = height / 2;
-
-            for (let i = 0; i < starCount; i++) {
-                let star = stars[i];
-                star.z -= speed;
-
-                if (star.z <= 0) {
-                    star.z = width;
-                    star.x = (Math.random() - 0.5) * width * 2;
-                    star.y = (Math.random() - 0.5) * height * 2;
+            ctx.fillStyle = '#030308'; ctx.fillRect(0, 0, width, height);
+            stars.forEach(s => {
+                s.z -= 0.8; if(s.z <= 0) s.z = width;
+                let k = 250/s.z, px = s.x*k + width/2, py = s.y*k + height/2;
+                if(px>=0 && px<=width && py>=0 && py<=height) {
+                    ctx.fillStyle = `rgba(0, 242, 254, ${1 - s.z/width})`;
+                    ctx.beginPath(); ctx.arc(px, py, (1-s.z/width)*2.2*s.size, 0, Math.PI*2); ctx.fill();
                 }
-
-                let k = 250 / star.z;
-                let px = star.x * k + cx;
-                let py = star.y * k + cy;
-
-                if (px >= 0 && px <= width && py >= 0 && py <= height) {
-                    let size = (1 - star.z / width) * 2.2 * star.size;
-                    let alpha = (1 - star.z / width);
-                    ctx.fillStyle = `rgba(0, 242, 254, ${alpha})`;
-                    ctx.beginPath();
-                    ctx.arc(px, py, size > 0 ? size : 0.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
+            });
             requestAnimationFrame(drawStars);
         }
         drawStars();
