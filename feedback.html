@@ -62,18 +62,37 @@
             transform: translateY(-2px);
         }
 
+        /* 已绑定状态卡片 */
         .user-profile {
             display: none; align-items: center; gap: 10px;
             background: rgba(20, 20, 35, 0.75); border: 1px solid var(--card-border);
-            padding: 5px 14px 5px 6px; border-radius: 25px; backdrop-filter: blur(15px);
+            padding: 5px 12px 5px 6px; border-radius: 25px; backdrop-filter: blur(15px);
         }
 
         .user-profile img {
-            width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--accent-cyan); object-fit: cover;
+            width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--accent-cyan); object-fit: cover;
         }
 
         .user-profile span {
             font-size: 0.88rem; font-weight: 600; color: var(--text-main);
+        }
+
+        /* 退出登录按钮样式 */
+        .btn-logout {
+            background: transparent;
+            color: #ff4d4f;
+            border: 1px solid rgba(255, 77, 79, 0.3);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-left: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 77, 79, 0.15);
+            border-color: #ff4d4f;
         }
 
         .container { max-width: 800px; margin: 0 auto; padding: 90px 24px 60px; position: relative; z-index: 5; }
@@ -141,6 +160,7 @@
             <div class="user-profile" id="userProfile">
                 <img src="" alt="Avatar" id="navAvatar">
                 <span id="navUsername"></span>
+                <button class="btn-logout" onclick="logout()">退出</button>
             </div>
         </div>
     </div>
@@ -162,66 +182,59 @@
     </div>
 
     <script>
-        // 替换为你的 GitHub 与 Supabase 配置参数
-        const GITHUB_CLIENT_ID = 'Ov23li1PI8t6KfDmNAUe'; 
         const SUPABASE_URL = 'https://pexsmwuqnwkvmmmodamt.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_ac-ERarehijW_Kkox5rEYw_vmdgatve';
 
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
-        // 1. 点击绑定：跳 GitHub 授权，直接重定向回本页面
-        function loginWithGithub() {
-            const redirectUri = window.location.origin + window.location.pathname;
-            window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=read:user`;
+        // 1. 点击绑定 GitHub
+        async function loginWithGithub() {
+            const { error } = await db.auth.signInWithOAuth({
+                provider: 'github',
+                options: {
+                    redirectTo: window.location.origin + window.location.pathname
+                }
+            });
+            if (error) alert('登录跳转失败: ' + error.message);
         }
 
-        // 2. 页面加载初始化
+        // 2. 退出登录逻辑
+        async function logout() {
+            await db.auth.signOut(); // 清理 Supabase 登录状态
+            localStorage.removeItem('gh_user'); // 清理本地缓存
+            currentUser = null;
+
+            // 切换 UI 状态
+            document.getElementById('userProfile').style.display = 'none';
+            document.getElementById('btnBindGithub').style.display = 'inline-flex';
+        }
+
+        // 3. 页面加载完成后检查登录状态
         window.addEventListener('DOMContentLoaded', async () => {
             fetchComments();
-            await handleOAuthCallback(); // 优先检测链接里有没有授权返回的 code
-            checkUser();
+            checkUserSession();
         });
 
-        // 关键逻辑：捕获 GitHub 授权重定向带回来的 code，并存入本地状态
-        async function handleOAuthCallback() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
+        // 从 Supabase Session 获取真实的 GitHub 用户信息
+        async function checkUserSession() {
+            const { data: { session } } = await db.auth.getSession();
+            if (session && session.user) {
+                const meta = session.user.user_metadata;
+                currentUser = {
+                    username: meta.user_name || meta.preferred_username || 'GitHub用户',
+                    avatarUrl: meta.avatar_url
+                };
 
-            if (code) {
-                // 如果是从 GitHub 授权跳回来的，清除 URL 中的 code 参数，保持网址干净
-                window.history.replaceState({}, document.title, window.location.pathname);
-
-                // 纯前端模拟写入用户绑定状态（提示：如果是纯前端，用户账号信息在此处生成并持久化）
-                // 若已有记录则直接使用，否则随机赋给当前绑定用户一个标准账号标记
-                let user = JSON.parse(localStorage.getItem('gh_user'));
-                if (!user) {
-                    user = {
-                        username: "GitHub User",
-                        avatarUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-                    };
-                    localStorage.setItem('gh_user', JSON.stringify(user));
-                }
+                // 展示右上角卡片
+                document.getElementById('btnBindGithub').style.display = 'none';
+                document.getElementById('navUsername').innerText = currentUser.username;
+                document.getElementById('navAvatar').src = currentUser.avatarUrl;
+                document.getElementById('userProfile').style.display = 'inline-flex';
             }
         }
 
-        // 检查 LocalStorage 是否已绑定
-        function checkUser() {
-            const savedUser = localStorage.getItem('gh_user');
-            if (savedUser) {
-                try {
-                    currentUser = JSON.parse(savedUser);
-                    document.getElementById('btnBindGithub').style.display = 'none';
-                    document.getElementById('navUsername').innerText = currentUser.username;
-                    document.getElementById('navAvatar').src = currentUser.avatarUrl;
-                    document.getElementById('userProfile').style.display = 'inline-flex';
-                } catch(e) {
-                    localStorage.removeItem('gh_user');
-                }
-            }
-        }
-
-        // 3. 从 Supabase 读取所有留言
+        // 4. 从 Supabase 读取留言
         async function fetchComments() {
             const { data, error } = await db.from('comments').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('commentsContainer');
@@ -232,7 +245,7 @@
             container.innerHTML = data.map(item => `
                 <div class="comment-card">
                     <div class="comment-header">
-                        <img src="${item.avatar_url || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'}" class="comment-avatar">
+                        <img src="${item.avatar_url}" class="comment-avatar">
                         <span class="comment-author">${item.username}</span>
                         <span class="comment-time">${new Date(item.created_at).toLocaleString()}</span>
                     </div>
@@ -241,15 +254,15 @@
             `).join('');
         }
 
-        // 4. 发送留言存入 Supabase
+        // 5. 发布留言存入 Supabase
         async function postComment() {
             if (!currentUser) {
-                alert('请先点击右上角 [绑定 GitHub 账号] 后再留言！');
+                alert('请先绑定 GitHub 账号后再发送留言！');
                 return;
             }
             const textarea = document.getElementById('commentText');
             const content = textarea.value.trim();
-            if (!content) return alert('留言内容不能为空！');
+            if (!content) return alert('请输入内容！');
 
             const { error } = await db.from('comments').insert([{
                 username: currentUser.username,
@@ -258,10 +271,10 @@
             }]);
 
             if (error) {
-                alert('留言失败: ' + error.message);
+                alert('提交失败: ' + error.message);
             } else {
                 textarea.value = '';
-                fetchComments(); // 刷新 Supabase 留言列表
+                fetchComments();
             }
         }
 
