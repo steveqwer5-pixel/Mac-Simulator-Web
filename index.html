@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <title>Mac Simulator - FireMew0K</title>
+    <style>
+        :root {
+            --accent-blue: #0071e3;
+            --accent-cyan: #00f2fe;
+            --accent-purple: #7928ca;
+            --bg-black: #030308;
+            --card-bg: rgba(20, 20, 35, 0.65);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --text-main: #f5f5f7;
+            --text-sub: #a1a1a6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background-color: var(--bg-black);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main);
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 20px;
+            right: 24px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            background: rgba(20, 20, 35, 0.75);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.88rem;
+            outline: none;
+            cursor: pointer;
+            backdrop-filter: blur(15px);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+            color: #fff;
+        }
+
+        .lang-select {
+            background: rgba(20, 20, 35, 0.75);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.88rem;
+            outline: none;
+            cursor: pointer;
+            backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
+        }
+
+        .lang-select:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .lang-select option {
+            background-color: #0d0d1a;
+            color: var(--text-main);
+        }
+
+        #main-content {
+            position: relative;
+            width: 100vw;
+            min-height: 100vh;
+            z-index: 5;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 80px 24px 60px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 40%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-sub);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 113, 227, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 113, 227, 0.7);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.16);
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 28px;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: var(--text-sub);
+            font-size: 0.92rem;
+        }
+
+        .usage-box {
+            background: rgba(15, 15, 30, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 60px;
+        }
+
+        .usage-box ol {
+            padding-left: 20px;
+            color: var(--text-sub);
+            line-height: 1.8;
+        }
+
+        .usage-box li strong {
+            color: var(--text-main);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-sub);
+            border-top: 1px solid var(--card-border);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="top-nav">
+        <a href="feedback.html" class="nav-btn" id="btnGoFeedback">💬 留言反馈</a>
+        <select id="langSelect" class="lang-select">
+            <option value="zh_cn">🇨🇳 简体中文</option>
+            <option value="pt_pt">🇵🇹 Português</option>
+            <option value="en_us">🇺🇸 English (US)</option>
+        </select>
+    </div>
+
+    <div id="main-content">
+        <div class="container">
+            <header class="hero">
+                <h1>Mac Simulator</h1>
+                <p id="heroSubtitle">在 Windows 上原生还原 macOS 的极致视觉与高效交互</p>
+
+                <div class="btn-group">
+                    <a href="https://github.com/steveqwer5-pixel/Mac-Simulator/releases" class="btn btn-primary" target="_blank" id="btnDownload">
+                        🚀 立即下载最新 Release
+                    </a>
+                    <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" class="btn btn-secondary" target="_blank" id="btnRepo">
+                        ⭐ GitHub 开源仓库
+                    </a>
+                </div>
+            </header>
+
+            <h2 class="section-title" id="sectionComponents">核心部件</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-icon">🔍</div>
+                    <h3>Spotlight.exe</h3>
+                    <p id="descSpotlight">macOS 经典极简快捷搜索悬浮栏，即调即用，轻量纯粹。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🏝️</div>
+                    <h3>WinIsland.exe</h3>
+                    <p id="descWinIsland">顶栏悬浮灵动岛，支持日历、实时时钟与音乐播放控制器。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚓</div>
+                    <h3 id="titleDockfinder">Dockfinder 联动</h3>
+                    <p id="descDockfinder">推荐配合 Steam 上的 Dockfinder 使用，构建完美的 Mac 桌面体验。</p>
+                </div>
+            </div>
+
+            <div class="usage-box">
+                <h3 style="margin-bottom: 16px; font-size: 1.3rem;" id="titleQuickStart">💡 快速上手指南</h3>
+                <ol id="usageList">
+                    <li>点击下方或顶部的 <strong>[立即下载]</strong> 前往 GitHub Releases 页面。</li>
+                    <li>直接下载项目仓库中的 <code>WinIsland.exe</code> 与 <code>Spotlight.exe</code>。</li>
+                    <li>双击运行即可使用，无需解压或安装，纯绿色软件。</li>
+                </ol>
+            </div>
+
+            <footer>
+                <p><span id="footerText">Designed & Developed by</span> <strong>FireMew0K</strong> | Project hosted on <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" target="_blank">GitHub</a></p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const stars = [];
+        const starCount = 280;
+        let speed = 0.8;
+
+        for (let i = 0; i < starCount; i++) {
+            stars.push({
+                x: (Math.random() - 0.5) * width * 2,
+                y: (Math.random() - 0.5) * height * 2,
+                z: Math.random() * width,
+                size: Math.random() * 1.5
+            });
+        }
+
+        function drawStars() {
+            ctx.fillStyle = '#030308';
+            ctx.fillRect(0, 0, width, height);
+
+            const cx = width / 2;
+            const cy = height / 2;
+
+            for (let i = 0; i < starCount; i++) {
+                let star = stars[i];
+                star.z -= speed;
+
+                if (star.z <= 0) {
+                    star.z = width;
+                    star.x = (Math.random() - 0.5) * width * 2;
+                    star.y = (Math.random() - 0.5) * height * 2;
+                }
+
+                let k = 250 / star.z;
+                let px = star.x * k + cx;
+                let py = star.y * k + cy;
+
+                if (px >= 0 && px <= width && py >= 0 && py <= height) {
+                    let size = (1 - star.z / width) * 2.2 * star.size;
+                    let alpha = (1 - star.z / width);
+                    ctx.fillStyle = `rgba(0, 242, 254, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size > 0 ? size : 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        const i18n = {
+            zh_cn: {
+                btnGoFeedback: "💬 留言反馈",
+                heroSubtitle: "在 Windows 上原生还原 macOS 的极致视觉与高效交互",
+                btnDownload: "🚀 立即下载最新 Release",
+                btnRepo: "⭐ GitHub 开源仓库",
+                sectionComponents: "核心部件",
+                descSpotlight: "macOS 经典极简快捷搜索悬浮栏，即调即用，轻量纯粹。",
+                descWinIsland: "顶栏悬浮灵动岛，支持日历、实时时钟与音乐播放控制器。",
+                titleDockfinder: "Dockfinder 联动",
+                descDockfinder: "推荐配合 Steam 上的 Dockfinder 使用，构建完美的 Mac 桌面体验。",
+                titleQuickStart: "💡 快速上手指南",
+                usageSteps: [
+                    "点击下方或顶部的 <strong>[立即下载]</strong> 前往 GitHub Releases 页面。",
+                    "直接下载项目仓库中的 <code>WinIsland.exe</code> 与 <code>Spotlight.exe</code>。",
+                    "双击运行即可使用，无需解压或安装，纯绿色软件。"
+                ],
+                footerText: "Designed & Developed by"
+            },
+            pt_pt: {
+                btnGoFeedback: "💬 Feedback",
+                heroSubtitle: "Restaurando nativamente a experiência visual e de interação do macOS no Windows",
+                btnDownload: "🚀 Baixar Último Release",
+                btnRepo: "⭐ Repositório no GitHub",
+                sectionComponents: "Componentes Principais",
+                descSpotlight: "Barra de pesquisa rápida minimalista no estilo macOS, leve e instantânea.",
+                descWinIsland: "Dynamic Island flutuante no topo, suporte a calendário, relógio e controle de música.",
+                titleDockfinder: "Integração Dockfinder",
+                descDockfinder: "Recomendado usar junto com o Dockfinder na Steam para criar a experiência Mac perfeita.",
+                titleQuickStart: "💡 Guia Rápido de Início",
+                usageSteps: [
+                    "Clique em <strong>[Baixar Último Release]</strong> para ir à página de lançamentos do GitHub.",
+                    "Baixe diretamente os arquivos <code>WinIsland.exe</code> e <code>Spotlight.exe</code>.",
+                    "Dê um duplo clique para executar. Sem necessidade de instalação, 100% portátil."
+                ],
+                footerText: "Desenhado e Desenvolvido por"
+            },
+            en_us: {
+                btnGoFeedback: "💬 Feedback",
+                heroSubtitle: "Natively reproducing macOS visuals and efficient interaction on Windows",
+                btnDownload: "🚀 Download Latest Release",
+                btnRepo: "⭐ GitHub Repository",
+                sectionComponents: "Core Components",
+                descSpotlight: "Classic macOS minimalist quick search float bar, instant call and lightweight.",
+                descWinIsland: "Top floating Dynamic Island with calendar, real-time clock, and music media control.",
+                titleDockfinder: "Dockfinder Linkage",
+                descDockfinder: "Recommended to use with Dockfinder on Steam for a complete Mac desktop experience.",
+                titleQuickStart: "💡 Quick Start Guide",
+                usageSteps: [
+                    "Click <strong>[Download Latest Release]</strong> above to visit the GitHub Releases page.",
+                    "Download <code>WinIsland.exe</code> and <code>Spotlight.exe</code> directly from the repository.",
+                    "Double click to run instantly. No installation required, standalone green software."
+                ],
+                footerText: "Designed & Developed by"
+            }
+        };
+
+        const langSelect = document.getElementById('langSelect');
+
+        function changeLanguage(lang) {
+            const data = i18n[lang] || i18n.zh_cn;
+            document.getElementById('btnGoFeedback').innerText = data.btnGoFeedback;
+            document.getElementById('heroSubtitle').innerText = data.heroSubtitle;
+            document.getElementById('btnDownload').innerHTML = data.btnDownload;
+            document.getElementById('btnRepo').innerHTML = data.btnRepo;
+            document.getElementById('sectionComponents').innerText = data.sectionComponents;
+            document.getElementById('descSpotlight').innerText = data.descSpotlight;
+            document.getElementById('descWinIsland').innerText = data.descWinIsland;
+            document.getElementById('titleDockfinder').innerText = data.titleDockfinder;
+            document.getElementById('descDockfinder').innerText = data.descDockfinder;
+            document.getElementById('titleQuickStart').innerText = data.titleQuickStart;
+            document.getElementById('footerText').innerText = data.footerText;
+
+            const usageList = document.getElementById('usageList');
+            usageList.innerHTML = '';
+            data.usageSteps.forEach(stepHtml => {
+                const li = document.createElement('li');
+                li.innerHTML = stepHtml;
+                usageList.appendChild(li);
+            });
+        }
+
+        langSelect.addEventListener('change', (e) => {
+            changeLanguage(e.target.value);
+        });
+    </script>
+</body>
+</html>
