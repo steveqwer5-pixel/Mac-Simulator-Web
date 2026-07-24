@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="favicon.png">
-    <title>Mac Simulator Wiki 项目官方文档</title>
+    <title>Mac Simulator Wiki</title>
     <style>
         :root {
             --bg-black: #0b0f19;
@@ -15,7 +15,6 @@
             --accent-cyan: #00f2fe;
             --accent-blue: #0071e3;
             --accent-purple: #7928ca;
-            --accent-red: #ff4d4f;
             --accent-yellow: #faad14;
             --code-bg: #070a12;
         }
@@ -40,7 +39,12 @@
             border-right: 1px solid var(--card-border);
             padding: 30px 20px;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
+
+        .sidebar-top { flex: 1; }
 
         .sidebar-header {
             display: flex;
@@ -77,6 +81,36 @@
         .sidebar a:hover {
             color: var(--accent-cyan);
             background: rgba(0, 242, 254, 0.08);
+        }
+
+        /* 语言选择按钮样式 */
+        .lang-switch {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 6px;
+            display: flex;
+            gap: 4px;
+            margin-top: 20px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            padding: 6px 0;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: var(--accent-blue);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.4);
         }
 
         /* 内容区 */
@@ -135,7 +169,6 @@
         p, li { color: #cbd5e1; font-size: 0.95rem; margin-bottom: 8px; }
         ul, ol { padding-left: 20px; }
 
-        /* 正规 Wiki 常用提示框（Alert/Callout） */
         .callout {
             border-left: 4px solid var(--accent-cyan);
             background: rgba(0, 242, 254, 0.05);
@@ -148,23 +181,6 @@
         .callout-warning {
             border-left-color: var(--accent-yellow);
             background: rgba(250, 173, 20, 0.08);
-        }
-
-        .callout-danger {
-            border-left-color: var(--accent-red);
-            background: rgba(255, 77, 79, 0.08);
-        }
-
-        .tag {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: rgba(0, 242, 254, 0.12);
-            color: var(--accent-cyan);
-            border: 1px solid rgba(0, 242, 254, 0.25);
-            margin-right: 6px;
         }
 
         /* 图片预览展台 */
@@ -182,6 +198,7 @@
             height: auto;
             border-radius: 8px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            transition: opacity 0.3s ease;
         }
 
         .img-caption {
@@ -236,114 +253,267 @@
 <body>
 
     <div class="sidebar">
-        <div class="sidebar-header">
-            <img src="favicon.png" alt="logo" onerror="this.style.display='none'">
-            <h2>Mac Simulator</h2>
+        <div class="sidebar-top">
+            <div class="sidebar-header">
+                <img src="favicon.png" alt="logo" onerror="this.style.display='none'">
+                <h2>Mac Simulator</h2>
+            </div>
+            <ul>
+                <li><a href="#overview" id="nav-overview">1. 项目概述</a></li>
+                <li><a href="#spotlight" id="nav-spotlight">2. Spotlight 聚焦搜索</a></li>
+                <li><a href="#winisland" id="nav-winisland">3. WinIsland 灵动岛</a></li>
+                <li><a href="#shortcuts" id="nav-shortcuts">4. 快捷键指南</a></li>
+                <li><a href="#troubleshooting" id="nav-troubleshooting">5. 常见问题排查</a></li>
+                <li><a href="#assets" id="nav-assets">6. 资源目录</a></li>
+            </ul>
         </div>
-        <ul>
-            <li><a href="#overview">1. 项目概述</a></li>
-            <li><a href="#spotlight">2. Spotlight 聚焦搜索</a></li>
-            <li><a href="#winisland">3. WinIsland 灵动岛</a></li>
-            <li><a href="#shortcuts">4. 快捷键指南</a></li>
-            <li><a href="#troubleshooting">5. 常见问题与排查 (FAQ)</a></li>
-            <li><a href="#assets">6. 资源与文件架构</a></li>
-        </ul>
+
+        <div class="lang-switch">
+            <button class="lang-btn active" onclick="switchLang('zh')">中文</button>
+            <button class="lang-btn" onclick="switchLang('en')">English</button>
+            <button class="lang-btn" onclick="switchLang('pt')">PT</button>
+        </div>
     </div>
 
     <div class="content">
         <div class="title-box">
             <img src="favicon.png" alt="logo" onerror="this.style.display='none'">
-            <h1>Mac Simulator 开发 Wiki</h1>
+            <h1 id="txt-title">Mac Simulator 开发 Wiki</h1>
         </div>
-        <p class="subtitle">Mac 桌面仿真模拟器 | 官方规范与维护文档</p>
+        <p class="subtitle" id="txt-subtitle">Mac 桌面仿真模拟器 | 官方规范与维护文档</p>
 
         <section id="overview">
-            <h2>1. 项目概述</h2>
-            <p><strong>Mac Simulator</strong> 是专注于还原 macOS 核心桌面交互体验的桌面应用组件集合。目前重点包含系统级响应的 <strong>Spotlight 聚焦搜索</strong> 以及顶部 <strong>WinIsland 灵动岛</strong> 动态交互模块。</p>
+            <h2 id="sec1-title">1. 项目概述</h2>
+            <p id="sec1-p1"><strong>Mac Simulator</strong> 是专注于还原 macOS 核心桌面交互体验的桌面应用组件集合。目前重点包含系统级响应的 <strong>Spotlight 聚焦搜索</strong> 以及顶部 <strong>WinIsland 灵动岛</strong> 动态交互模块。</p>
             
             <div class="callout">
-                📌 <strong>设计理念：</strong> 高度还原 macOS 毛玻璃高斯模糊（Backdrop Filter）、拟态极简微交互，并支持原生快捷键无缝唤醒。
+                📌 <strong id="sec1-tip-title">设计理念：</strong> <span id="sec1-tip-desc">高度还原 macOS 毛玻璃高斯模糊（Backdrop Filter）、拟态极简微交互，并支持原生快捷键无缝唤醒。</span>
             </div>
         </section>
 
         <section id="spotlight">
-            <h2>2. Spotlight 聚焦搜索</h2>
-            <p>Spotlight 为系统提供了一个居中弹出的全局快捷搜索框，可快速进行应用检索与命令响应。</p>
+            <h2 id="sec2-title">2. Spotlight 聚焦搜索</h2>
+            <p id="sec2-p1">Spotlight 为系统提供了一个居中弹出的全局快捷搜索框，可快速进行应用检索与命令响应。</p>
 
             <div class="img-container">
-                <img src="https://private-user-images.githubusercontent.com/234416291/626066348-6f9bbe64-b14d-4105-b2cd-e2eb39554fac.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODQ5MDAwODksIm5iZiI6MTc4NDg5OTc4OSwicGF0aCI6Ii8yMzQ0MTYyOTEvNjI2MDY2MzQ4LTZmOWJiZTY0LWIxNGQtNDE0NS1iMmNkLWebMzU1NGZhYy5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwNzI0JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDcyNFQxMzI5NDlaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1kMGM4MzVmYmNiZDUzNTc4MzVhMWQwZWM1Mzc3NTdhNDFlYjM0ZjRkNDE5MDU2ZjZlNDllYzg5MGU4ZTQ4OWNiJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.AoJYW58KAvfrpj9YpDa_ZDx0_sIqXyjqphYn7n3SDho" alt="Spotlight 实际运行效果图" onerror="this.alt='[ Spotlight 图例加载失败，请检查网络权限 ]'">
-                <div class="img-caption">📷 图 1.1：Spotlight 聚焦搜索框UI运行效果展示</div>
+                <img id="spotlight-img" src="spotlight_cn.png" alt="Spotlight 运行效果" onerror="this.onerror=null; this.alt='[ 图片加载失败，请检查文件路径 ]'">
+                <div class="img-caption" id="spotlight-img-caption">📷 图 1.1：Spotlight 聚焦搜索框 UI 运行效果展示 (中文版)</div>
             </div>
 
-            <h3>核心特性：</h3>
+            <h3 id="sec2-sub">核心特性：</h3>
             <ul>
-                <li><strong>高优先级快捷唤醒：</strong> 监听系统全局按键，一键调出。</li>
-                <li><strong>动态遮罩与居中渲染：</strong> 唤醒时自动聚焦输入框，并生成暗色背景遮罩。</li>
+                <li id="sec2-li1"><strong>高优先级快捷唤醒：</strong> 监听系统全局按键，一键调出。</li>
+                <li id="sec2-li2"><strong>动态遮罩与居中渲染：</strong> 唤醒时自动聚焦输入框，并生成暗色背景遮罩。</li>
             </ul>
         </section>
 
         <section id="winisland">
-            <h2>3. WinIsland 灵动岛</h2>
-            <p>位于屏幕顶部的动态胶囊模块，支持多种状态切换与系统消息通知展示。</p>
+            <h2 id="sec3-title">3. WinIsland 灵动岛</h2>
+            <p id="sec3-p1">位于屏幕顶部的动态胶囊模块，支持多种状态切换与系统消息通知展示。</p>
 
-            <h3>核心形态：</h3>
+            <h3 id="sec3-sub">核心形态：</h3>
             <ul>
-                <li><strong>胶囊收起态（Idle）：</strong> 挂载于状态栏中央，静默不占空间。</li>
-                <li><strong>展开通知态（Expanded）：</strong> 触发系统级消息事件时，平滑伸展展开。</li>
+                <li id="sec3-li1"><strong>胶囊收起态（Idle）：</strong> 挂载于状态栏中央，静默不占空间。</li>
+                <li id="sec3-li2"><strong>展开通知态（Expanded）：</strong> 触发系统级消息事件时，平滑伸展展开。</li>
             </ul>
         </section>
 
         <section id="shortcuts">
-            <h2>4. 系统快捷键指南</h2>
+            <h2 id="sec4-title">4. 系统快捷键指南</h2>
             <table class="table-custom">
                 <thead>
                     <tr>
-                        <th>快捷键组合</th>
-                        <th>触发动作</th>
-                        <th>关联模块</th>
+                        <th id="th-1">快捷键组合</th>
+                        <th id="th-2">触发动作</th>
+                        <th id="th-3">关联模块</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd></td>
-                        <td>显示 / 隐藏 Spotlight 聚焦搜索框</td>
-                        <td>Spotlight 搜索</td>
+                        <td id="td-spotlight-act">显示 / 隐藏 Spotlight 聚焦搜索框</td>
+                        <td>Spotlight</td>
                     </tr>
                     <tr>
                         <td><kbd>Esc</kbd></td>
-                        <td>强行关闭当前激活的 Spotlight 窗口或弹窗</td>
-                        <td>全局控制</td>
+                        <td id="td-esc-act">强行关闭当前激活的 Spotlight 窗口或弹窗</td>
+                        <td id="td-esc-mod">全局控制</td>
                     </tr>
                 </tbody>
             </table>
         </section>
 
         <section id="troubleshooting">
-            <h2>5. 常见问题与排查 (Troubleshooting)</h2>
-            
+            <h2 id="sec5-title">5. 常见问题与排查 (Troubleshooting)</h2>
             <div class="callout callout-warning">
-                ⚠️ <strong>快捷键按了没反应？</strong>
-                <p>1. 请确认当前窗口是否已获得焦点（Focus）。<br>
-                2. 检查是否有其他后台软件（如输入法、录屏软件）占用了 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> 快捷键组合。</p>
-            </div>
-
-            <div class="callout callout-danger">
-                ❌ <strong>Spotlight 图例无法显示？</strong>
-                <p>GitHub 私有图片链接包含 JWT 签名，若链接过期，可在 HTML 代码的 `&lt;img src="..."&gt;` 标签中更新为你本地存放在项目文件夹下的图片路径（如 `src="spotlight-demo.png"`）。</p>
+                ⚠️ <strong id="sec5-warn-title">快捷键按了没反应？</strong>
+                <p id="sec5-warn-desc">1. 请确认当前窗口是否已获得焦点（Focus）。<br>
+                2. 检查是否有其他后台软件占用或冲突了 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> 快捷键。</p>
             </div>
         </section>
 
         <section id="assets">
-            <h2>6. 资源与文件架构</h2>
+            <h2 id="sec6-title">6. 资源与文件架构</h2>
             <pre>
 Mac-Simulator/
-├── favicon.png               # 应用与浏览器标签页 Logo 图标
-├── wiki.html                 # 本 Wiki 说明文档
-└── ...                       # 应用的核心 JavaScript 与 CSS 逻辑
+├── favicon.png               # Logo 图标
+├── spotlight_cn.png          # Spotlight 效果图 (中文)
+├── spotlight_us.png          # Spotlight 效果图 (英文)
+├── spotlight_pt.png          # Spotlight 效果图 (葡萄牙语)
+├── wiki.html                 # 项目说明文档
+└── ...
             </pre>
         </section>
 
     </div>
 
+    <script>
+        const i18n = {
+            zh: {
+                title: "Mac Simulator 开发 Wiki",
+                subtitle: "Mac 桌面仿真模拟器 | 官方规范与维护文档",
+                nav: ["1. 项目概述", "2. Spotlight 聚焦搜索", "3. WinIsland 灵动岛", "4. 快捷键指南", "5. 常见问题排查", "6. 资源目录"],
+                sec1Title: "1. 项目概述",
+                sec1P1: "<strong>Mac Simulator</strong> 是专注于还原 macOS 核心桌面交互体验的桌面应用组件集合。目前重点包含系统级响应的 <strong>Spotlight 聚焦搜索</strong> 以及顶部 <strong>WinIsland 灵动岛</strong> 动态交互模块。",
+                sec1TipTitle: "设计理念：",
+                sec1TipDesc: "高度还原 macOS 毛玻璃高斯模糊（Backdrop Filter）、拟态极简微交互，并支持原生快捷键无缝唤醒。",
+                sec2Title: "2. Spotlight 聚焦搜索",
+                sec2P1: "Spotlight 为系统提供了一个居中弹出的全局快捷搜索框，可快速进行应用检索与命令响应。",
+                spotlightImg: "spotlight_cn.png",
+                spotlightCaption: "📷 图 1.1：Spotlight 聚焦搜索框 UI 运行效果展示 (中文版)",
+                sec2Sub: "核心特性：",
+                sec2Li1: "<strong>高优先级快捷唤醒：</strong> 监听系统全局按键，一键调出。",
+                sec2Li2: "<strong>动态遮罩与居中渲染：</strong> 唤醒时自动聚焦输入框，并生成暗色背景遮罩。",
+                sec3Title: "3. WinIsland 灵动岛",
+                sec3P1: "位于屏幕顶部的动态胶囊模块，支持多种状态切换与系统消息通知展示。",
+                sec3Sub: "核心形态：",
+                sec3Li1: "<strong>胶囊收起态（Idle）：</strong> 挂载于状态栏中央，静默不占空间。",
+                sec3Li2: "<strong>展开通知态（Expanded）：</strong> 触发系统级消息事件时，平滑伸展展开。",
+                sec4Title: "4. 系统快捷键指南",
+                th: ["快捷键组合", "触发动作", "关联模块"],
+                tdSpotlight: "显示 / 隐藏 Spotlight 聚焦搜索框",
+                tdEscAct: "强行关闭当前激活的 Spotlight 窗口或弹窗",
+                tdEscMod: "全局控制",
+                sec5Title: "5. 常见问题与排查 (Troubleshooting)",
+                sec5WarnTitle: "快捷键按了没反应？",
+                sec5WarnDesc: "1. 请确认当前窗口是否已获得焦点（Focus）。<br>2. 检查是否有其他后台软件占用或冲突了 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> 快捷键。",
+                sec6Title: "6. 资源与文件架构"
+            },
+            en: {
+                title: "Mac Simulator Dev Wiki",
+                subtitle: "Mac Desktop Simulator | Official Specification & Maintenance Docs",
+                nav: ["1. Overview", "2. Spotlight Search", "3. WinIsland", "4. Shortcuts Guide", "5. Troubleshooting", "6. Resources"],
+                sec1Title: "1. Project Overview",
+                sec1P1: "<strong>Mac Simulator</strong> is a desktop application component suite focusing on restoring macOS core desktop interactions. Currently features system-responsive <strong>Spotlight Search</strong> and top <strong>WinIsland</strong> dynamic interaction module.",
+                sec1TipTitle: "Design Philosophy:",
+                sec1TipDesc: "Faithfully reproduces macOS Gaussian blur (Backdrop Filter), minimal micro-interactions, and supports seamless global shortcut wake-up.",
+                sec2Title: "2. Spotlight Search",
+                sec2P1: "Spotlight provides a centered popup global search bar for quick app searching and command execution.",
+                spotlightImg: "spotlight_us.png",
+                spotlightCaption: "📷 Fig 1.1: Spotlight Search UI Preview (English Version)",
+                sec2Sub: "Key Features:",
+                sec2Li1: "<strong>High-Priority Global Wakeup:</strong> Listens to global system hotkeys for instant display.",
+                sec2Li2: "<strong>Dynamic Overlay & Centered Rendering:</strong> Auto-focuses the input field with a darkened backdrop when triggered.",
+                sec3Title: "3. WinIsland",
+                sec3P1: "Dynamic capsule module at the top status bar, supporting multi-state transitions and system notifications.",
+                sec3Sub: "Core States:",
+                sec3Li1: "<strong>Idle Capsule:</strong> Docked quietly at the status bar center, taking minimal space.",
+                sec3Li2: "<strong>Expanded Notification:</strong> Smoothly expands when system notifications or interaction events are triggered.",
+                sec4Title: "4. System Shortcuts Guide",
+                th: ["Shortcut", "Trigger Action", "Module"],
+                tdSpotlight: "Show / Hide Spotlight Search",
+                tdEscAct: "Force close active Spotlight window or popups",
+                tdEscMod: "Global Control",
+                sec5Title: "5. Troubleshooting",
+                sec5WarnTitle: "Shortcuts not responding?",
+                sec5WarnDesc: "1. Ensure current window has focus.<br>2. Check if other background apps conflict with <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd>.",
+                sec6Title: "6. Resources & File Structure"
+            },
+            pt: {
+                title: "Wiki de Dev do Mac Simulator",
+                subtitle: "Simulador de Desktop Mac | Documentação Oficial de Especificação e Manutenção",
+                nav: ["1. Visão Geral", "2. Pesquisa Spotlight", "3. WinIsland", "4. Guia de Atalhos", "5. Solução de Problemas", "6. Recursos"],
+                sec1Title: "1. Visão Geral do Projeto",
+                sec1P1: "<strong>Mac Simulator</strong> é um conjunto de componentes focado em restaurar interações do macOS. Inclui a <strong>Pesquisa Spotlight</strong> e o módulo dinâmico <strong>WinIsland</strong>.",
+                sec1TipTitle: "Filosofia de Design:",
+                sec1TipDesc: "Reproduz o desfoque gaussiano do macOS (Backdrop Filter), microinterações minimalistas e suporte a atalhos globais.",
+                sec2Title: "2. Pesquisa Spotlight",
+                sec2P1: "O Spotlight fornece uma barra de pesquisa global centralizada para busca rápida de aplicativos e comandos.",
+                spotlightImg: "spotlight_pt.png",
+                spotlightCaption: "📷 Fig 1.1: Demonstração do Spotlight UI (Versão em Português)",
+                sec2Sub: "Principais Recursos:",
+                sec2Li1: "<strong>Ativação por Atalho Global:</strong> Responde a atalhos globais para exibição instantânea.",
+                sec2Li2: "<strong>Superposição Dinâmica:</strong> Foca automaticamente no campo de entrada com fundo escurecido.",
+                sec3Title: "3. WinIsland",
+                sec3P1: "Módulo de cápsula dinâmica na barra de status superior para notificações do sistema.",
+                sec3Sub: "Estados Principais:",
+                sec3Li1: "<strong>Cápsula Inativa (Idle):</strong> Fixada no centro da barra de status sem ocupar espaço.",
+                sec3Li2: "<strong>Notificação Expandida:</strong> Expande suavemente quando eventos ou notificações são disparados.",
+                sec4Title: "4. Guia de Atalhos do Sistema",
+                th: ["Atalho", "Ação Disparada", "Módulo"],
+                tdSpotlight: "Mostrar / Ocultar Pesquisa Spotlight",
+                tdEscAct: "Fechar janela do Spotlight ou pop-ups ativos",
+                tdEscMod: "Controle Global",
+                sec5Title: "5. Solução de Problemas",
+                sec5WarnTitle: "Os atalhos não respondem?",
+                sec5WarnDesc: "1. Verifique se a janela atual está em foco.<br>2. Verifique se outros aplicativos em segundo plano conflitam com <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd>.",
+                sec6Title: "6. Recursos e Estrutura de Arquivos"
+            }
+        };
+
+        function switchLang(lang) {
+            const data = i18n[lang];
+            if (!data) return;
+
+            // 切换按钮高亮状态
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 动态替换文字
+            document.getElementById('txt-title').innerText = data.title;
+            document.getElementById('txt-subtitle').innerText = data.subtitle;
+
+            // 侧边栏导航
+            const navIds = ['nav-overview', 'nav-spotlight', 'nav-winisland', 'nav-shortcuts', 'nav-troubleshooting', 'nav-assets'];
+            navIds.forEach((id, idx) => document.getElementById(id).innerText = data.nav[idx]);
+
+            // 各章节
+            document.getElementById('sec1-title').innerText = data.sec1Title;
+            document.getElementById('sec1-p1').innerHTML = data.sec1P1;
+            document.getElementById('sec1-tip-title').innerText = data.sec1TipTitle;
+            document.getElementById('sec1-tip-desc').innerText = data.sec1TipDesc;
+
+            document.getElementById('sec2-title').innerText = data.sec2Title;
+            document.getElementById('sec2-p1').innerText = data.sec2P1;
+            
+            // 📸 切换 Spotlight 图片 & 标注
+            document.getElementById('spotlight-img').src = data.spotlightImg;
+            document.getElementById('spotlight-img-caption').innerText = data.spotlightCaption;
+
+            document.getElementById('sec2-sub').innerText = data.sec2Sub;
+            document.getElementById('sec2-li1').innerHTML = data.sec2Li1;
+            document.getElementById('sec2-li2').innerHTML = data.sec2Li2;
+
+            document.getElementById('sec3-title').innerText = data.sec3Title;
+            document.getElementById('sec3-p1').innerText = data.sec3P1;
+            document.getElementById('sec3-sub').innerText = data.sec3Sub;
+            document.getElementById('sec3-li1').innerHTML = data.sec3Li1;
+            document.getElementById('sec3-li2').innerHTML = data.sec3Li2;
+
+            document.getElementById('sec4-title').innerText = data.sec4Title;
+            document.getElementById('th-1').innerText = data.th[0];
+            document.getElementById('th-2').innerText = data.th[1];
+            document.getElementById('th-3').innerText = data.th[2];
+            document.getElementById('td-spotlight-act').innerText = data.tdSpotlight;
+            document.getElementById('td-esc-act').innerText = data.tdEscAct;
+            document.getElementById('td-esc-mod').innerText = data.tdEscMod;
+
+            document.getElementById('sec5-title').innerText = data.sec5Title;
+            document.getElementById('sec5-warn-title').innerText = data.sec5WarnTitle;
+            document.getElementById('sec5-warn-desc').innerHTML = data.sec5WarnDesc;
+
+            document.getElementById('sec6-title').innerText = data.sec6Title;
+        }
+    </script>
 </body>
 </html>
