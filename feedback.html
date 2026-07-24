@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<script>
-  // 如果地址栏带有 .html，立刻用 replaceState 抹掉，不刷新页面
-  if (location.pathname.endsWith('.html')) {
-    var cleanPath = location.pathname.replace(/\.html$/, '');
-    if (cleanPath.endsWith('/index')) cleanPath = cleanPath.replace(/\/index$/, '/');
-    history.replaceState(null, '', cleanPath + location.search + location.hash);
-  }
-</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="favicon.png">
     <title>留言反馈 - Mac Simulator</title>
     
+    <script>
+      if (location.pathname.endsWith('.html')) {
+        var cleanPath = location.pathname.replace(/\.html$/, '');
+        if (cleanPath.endsWith('/index')) cleanPath = cleanPath.replace(/\/index$/, '/');
+        history.replaceState(null, '', cleanPath + location.search + location.hash);
+      }
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -172,7 +172,7 @@
     <canvas id="bg-canvas"></canvas>
 
     <div class="top-nav">
-        <a href="index.html" class="nav-btn">← 返回首页</a>
+        <a href="/" class="nav-btn">← 返回首页</a>
 
         <div id="authArea">
             <button class="btn-bind" id="btnBindGithub" onclick="loginWithGithub()">
@@ -216,12 +216,12 @@
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
-        // 1. 登录跳转
+        // 1. 登录跳转 (已更新回调地址为无后缀格式)
         async function loginWithGithub() {
             const { error } = await db.auth.signInWithOAuth({
                 provider: 'github',
                 options: {
-                    redirectTo: 'https://msw.zapto.org/feedback.html'
+                    redirectTo: 'https://msw.zapto.org/feedback'
                 }
             });
             if (error) alert('登录跳转失败: ' + error.message);
