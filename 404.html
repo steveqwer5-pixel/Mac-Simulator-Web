@@ -2,48 +2,62 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Redirecting...</title>
+    <title>Loading...</title>
+    <style>body { background-color: #0b0f19; margin: 0; }</style>
     <script>
         (function() {
             var path = window.location.pathname;
 
-            // 1. 如果用户访问的是带 .html 的网址（如 /wiki.html 或 /index.html），强行把地址栏的 .html 抹掉
+            // 1. 如果用户手动输入或跳转到了带有 .html 的网址，强制擦除 .html 并重定向
             if (path.endsWith('.html')) {
                 var cleanPath = path.slice(0, -5);
                 if (cleanPath.endsWith('/index')) {
                     cleanPath = cleanPath.slice(0, -6) || '/';
                 }
-                var newUrl = cleanPath + window.location.search + window.location.hash;
-                window.history.replaceState(null, '', newUrl);
-                
-                // 重新加载对应的实体 html 内容
-                fetch(path)
-                    .then(res => res.text())
-                    .then(html => { document.open(); document.write(html); document.close(); });
-                return;
+                var targetUrl = cleanPath + window.location.search + window.location.hash;
+                window.history.replaceState(null, '', targetUrl);
+                path = cleanPath; // 更新当前路径变量
             }
 
-            // 2. 如果用户访问的是无后缀网址（如 /wiki 或 /feedback），自动拉取对应的 .html 文件并无缝渲染
-            var targetFile = (path === '/' || path === '') ? '/index.html' : path + '.html';
+            // 2. 匹配真实的 HTML 文件
+            var realFile = (path === '/' || path === '') ? '/index.html' : path + '.html';
 
-            fetch(targetFile + window.location.search)
-                .then(function(response) {
-                    if (response.ok) {
-                        return response.text();
-                    }
-                    throw new Error('Page not found');
+            // 3. 拉取对应的 HTML 内容并渲染
+            fetch(realFile + window.location.search)
+                .then(function(res) {
+                    if (res.ok) return res.text();
+                    throw new Error('404');
                 })
                 .then(function(html) {
                     document.open();
                     document.write(html);
                     document.close();
+
+                    // 4. 关键点：渲染完成后，动态修改 DOM 中所有 <a> 标签，把 .html 删掉
+                    cleanLinks();
                 })
                 .catch(function() {
-                    document.body.innerHTML = '<h1 style="color:#fff;text-align:center;margin-top:100px;font-family:sans-serif;">404 - Page Not Found</h1>';
+                    document.body.innerHTML = '<h1 style="color:#fff;text-align:center;padding-top:100px;font-family:sans-serif;">404 - Page Not Found</h1>';
                 });
+
+            // 清理页面内所有超链接的 .html 后缀
+            function cleanLinks() {
+                setTimeout(function() {
+                    document.querySelectorAll('a[href]').forEach(function(a) {
+                        var href = a.getAttribute('href');
+                        if (href && href.endsWith('.html')) {
+                            if (href === 'index.html' || href === '/index.html') {
+                                a.setAttribute('href', '/');
+                            } else {
+                                a.setAttribute('href', href.replace(/\.html$/, ''));
+                            }
+                        }
+                    });
+                }, 50);
+            }
         })();
     </script>
 </head>
-<body style="background-color: #0b0f19;">
+<body>
 </body>
 </html>
