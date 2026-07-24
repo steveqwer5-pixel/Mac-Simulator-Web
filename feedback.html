@@ -62,7 +62,7 @@
             transform: translateY(-2px);
         }
 
-        /* 已绑定状态卡片 */
+        /* 已绑定个人卡片 */
         .user-profile {
             display: none; align-items: center; gap: 10px;
             background: rgba(20, 20, 35, 0.75); border: 1px solid var(--card-border);
@@ -77,7 +77,7 @@
             font-size: 0.88rem; font-weight: 600; color: var(--text-main);
         }
 
-        /* 退出登录按钮样式 */
+        /* 退出按钮 */
         .btn-logout {
             background: transparent;
             color: #ff4d4f;
@@ -138,8 +138,25 @@
         .comment-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
         .comment-avatar { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--accent-cyan); }
         .comment-author { font-weight: 600; font-size: 0.95rem; color: var(--accent-cyan); }
-        .comment-time { font-size: 0.78rem; color: var(--text-sub); margin-left: auto; }
+        .comment-time { font-size: 0.78rem; color: var(--text-sub); }
         .comment-body { color: var(--text-main); font-size: 0.95rem; line-height: 1.6; word-break: break-word; }
+
+        /* 删除按钮 */
+        .btn-delete {
+            background: transparent;
+            color: #ff4d4f;
+            border: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: auto;
+            opacity: 0.75;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -168,7 +185,7 @@
     <div class="container">
         <div class="header-box">
             <h1>💬 社区留言与反馈</h1>
-            <p>绑定 GitHub 账号后直接发送留言并保存至 Supabase 数据库</p>
+            <p>绑定 GitHub 账号后发送留言并保存至 Supabase 数据库</p>
         </div>
 
         <div class="comment-form clearfix">
@@ -184,49 +201,51 @@
     <script>
         const SUPABASE_URL = 'https://pexsmwuqnwkvmmmodamt.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_ac-ERarehijW_Kkox5rEYw_vmdgatve';
+        
+        // 📍 管理员特权 UID
+        const ADMIN_UID = 'a36ece6a-25b8-4772-b404-4980a1958d5b';
 
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
-        // 1. 点击绑定 GitHub
+        // 1. 登录跳转
         async function loginWithGithub() {
             const { error } = await db.auth.signInWithOAuth({
                 provider: 'github',
                 options: {
-                    redirectTo: window.location.origin + window.location.pathname
+                    redirectTo: 'https://msw.zapto.org/feedback.html'
                 }
             });
             if (error) alert('登录跳转失败: ' + error.message);
         }
 
-        // 2. 退出登录逻辑
+        // 2. 退出登录
         async function logout() {
-            await db.auth.signOut(); // 清理 Supabase 登录状态
-            localStorage.removeItem('gh_user'); // 清理本地缓存
+            await db.auth.signOut();
             currentUser = null;
 
-            // 切换 UI 状态
             document.getElementById('userProfile').style.display = 'none';
             document.getElementById('btnBindGithub').style.display = 'inline-flex';
+            fetchComments();
         }
 
-        // 3. 页面加载完成后检查登录状态
+        // 3. 页面加载初始化
         window.addEventListener('DOMContentLoaded', async () => {
+            await checkUserSession();
             fetchComments();
-            checkUserSession();
         });
 
-        // 从 Supabase Session 获取真实的 GitHub 用户信息
+        // 4. 获取当前用户 Session (包含 UID)
         async function checkUserSession() {
             const { data: { session } } = await db.auth.getSession();
             if (session && session.user) {
                 const meta = session.user.user_metadata;
                 currentUser = {
+                    id: session.user.id, // 📍 记录 Supabase UID
                     username: meta.user_name || meta.preferred_username || 'GitHub用户',
                     avatarUrl: meta.avatar_url
                 };
 
-                // 展示右上角卡片
                 document.getElementById('btnBindGithub').style.display = 'none';
                 document.getElementById('navUsername').innerText = currentUser.username;
                 document.getElementById('navAvatar').src = currentUser.avatarUrl;
@@ -234,27 +253,38 @@
             }
         }
 
-        // 4. 从 Supabase 读取留言
+        // 5. 拉取评论并根据 UID 判断删除权限
         async function fetchComments() {
             const { data, error } = await db.from('comments').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('commentsContainer');
+            
             if (error || !data || data.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--text-sub);">暂无留言，快来抢沙发吧！</p>';
                 return;
             }
-            container.innerHTML = data.map(item => `
-                <div class="comment-card">
-                    <div class="comment-header">
-                        <img src="${item.avatar_url}" class="comment-avatar">
-                        <span class="comment-author">${item.username}</span>
-                        <span class="comment-time">${new Date(item.created_at).toLocaleString()}</span>
+
+            // 判断是否为管理员账号登录
+            const isAdmin = currentUser && currentUser.id === ADMIN_UID;
+
+            container.innerHTML = data.map(item => {
+                // 条件：是大管理员 OR 是发布者本人
+                const canDelete = isAdmin || (currentUser && currentUser.id === item.user_id);
+
+                return `
+                    <div class="comment-card">
+                        <div class="comment-header">
+                            <img src="${item.avatar_url}" class="comment-avatar">
+                            <span class="comment-author">${item.username}</span>
+                            <span class="comment-time">${new Date(item.created_at).toLocaleString()}</span>
+                            ${canDelete ? `<button class="btn-delete" onclick="deleteComment(${item.id})">删除</button>` : ''}
+                        </div>
+                        <div class="comment-body">${escapeHtml(item.content)}</div>
                     </div>
-                    <div class="comment-body">${escapeHtml(item.content)}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // 5. 发布留言存入 Supabase
+        // 6. 发布评论 (附带用户 UID)
         async function postComment() {
             if (!currentUser) {
                 alert('请先绑定 GitHub 账号后再发送留言！');
@@ -265,6 +295,7 @@
             if (!content) return alert('请输入内容！');
 
             const { error } = await db.from('comments').insert([{
+                user_id: currentUser.id, // 📍 写入发帖人 UID
                 username: currentUser.username,
                 avatar_url: currentUser.avatarUrl,
                 content: content
@@ -274,6 +305,19 @@
                 alert('提交失败: ' + error.message);
             } else {
                 textarea.value = '';
+                fetchComments();
+            }
+        }
+
+        // 7. 执行删除
+        async function deleteComment(id) {
+            if (!confirm('确定要删除这条留言吗？')) return;
+
+            const { error } = await db.from('comments').delete().eq('id', id);
+
+            if (error) {
+                alert('删除失败: ' + error.message);
+            } else {
                 fetchComments();
             }
         }
