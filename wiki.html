@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+<script>
+  // 如果地址栏带有 .html，立刻用 replaceState 抹掉，不刷新页面
+  if (location.pathname.endsWith('.html')) {
+    var cleanPath = location.pathname.replace(/\.html$/, '');
+    if (cleanPath.endsWith('/index')) cleanPath = cleanPath.replace(/\/index$/, '/');
+    history.replaceState(null, '', cleanPath + location.search + location.hash);
+  }
+</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
