@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script>
+        // 获取当前 URL 路径
+        var path = window.location.pathname;
+
+        // 如果用户访问的是 /wiki.html 或 /feedback.html，去掉 .html 重新跳转
+        if (path.endsWith('.html')) {
+            var cleanPath = path.slice(0, -5);
+            if (cleanPath.endsWith('/index')) {
+                cleanPath = cleanPath.slice(0, -6) || '/';
+            }
+            window.location.replace(cleanPath + window.location.search + window.location.hash);
+        } 
+        // 如果用户访问的是 /wiki，尝试无缝渲染 /wiki.html
+        else {
+            // 拼接 .html 后发起的 fetch 或直接重定向
+            var target = path + '.html' + window.location.search + window.location.hash;
+            window.location.replace(target);
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>
