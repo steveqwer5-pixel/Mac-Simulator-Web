@@ -28,7 +28,7 @@
         body, html {
             width: 100%;
             height: 100%;
-            overflow: hidden;
+            overflow-x: hidden;
             background-color: var(--bg-black);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--text-main);
@@ -45,142 +45,43 @@
             pointer-events: none;
         }
 
-        /* ==================== 2. 开场：呼吸光圈与 3D 穿越 ==================== */
-        #portal-container {
+        /* 语言切换下拉框样式 */
+        .lang-switch-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            perspective: 1000px;
+            top: 20px;
+            right: 24px;
+            z-index: 100;
         }
 
-        /* 呼吸光圈 */
-        .breath-ring-wrapper {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 2;
-            transition: opacity 0.5s ease;
-        }
-
-        .breath-ring {
-            width: 240px;
-            height: 240px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(0, 242, 254, 0.05) 0%, transparent 60%);
-            border: 2px solid rgba(0, 242, 254, 0.8);
-            box-shadow: 
-                0 0 30px var(--accent-cyan),
-                0 0 10px var(--accent-purple),
-                inset 0 0 20px var(--accent-cyan);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            animation: ringBreath 3.5s ease-in-out infinite;
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
-        }
-
-        .breath-ring-wrapper:hover .breath-ring {
-            transform: scale(1.08);
-            box-shadow: 
-                0 0 60px var(--accent-cyan),
-                0 0 30px var(--accent-purple),
-                inset 0 0 30px var(--accent-cyan);
-        }
-
-        .ring-click-hint {
-            font-size: 1.15rem;
-            font-weight: 600;
-            letter-spacing: 3px;
-            color: #ffffff;
-            text-shadow: 0 0 12px var(--accent-cyan);
-        }
-
-        @keyframes ringBreath {
-            0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 0 25px var(--accent-cyan), 0 0 8px var(--accent-purple), inset 0 0 15px var(--accent-cyan);
-                border-color: rgba(0, 242, 254, 0.6);
-            }
-            50% {
-                transform: scale(1.06);
-                box-shadow: 0 0 65px var(--accent-cyan), 0 0 35px var(--accent-purple), inset 0 0 40px var(--accent-cyan);
-                border-color: rgba(121, 40, 202, 0.9);
-            }
-        }
-
-        /* 3D 隧道成就卡片（修正：默认 display: none 彻底防止闪现） */
-        .warp-tunnel {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            pointer-events: none;
-            display: none; 
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .achievement-card {
-            position: absolute;
-            width: 280px;
-            padding: 20px;
-            background: rgba(10, 10, 25, 0.85);
-            border: 1px solid var(--accent-cyan);
-            border-radius: 16px;
-            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
-            color: #fff;
-            backdrop-filter: blur(15px);
-        }
-
-        .achievement-card.left { left: 12vw; }
-        .achievement-card.right { right: 12vw; }
-
-        .achievement-card h4 {
-            color: var(--accent-cyan);
-            font-size: 1.05rem;
-            margin-bottom: 6px;
-        }
-
-        .achievement-card p {
+        .lang-select {
+            background: rgba(20, 20, 35, 0.75);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 0.88rem;
-            color: var(--text-sub);
+            outline: none;
+            cursor: pointer;
+            backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
         }
 
-        /* 全屏过场闪光 */
-        #warp-flash {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #ffffff;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 20;
-            transition: opacity 0.5s ease-out;
+        .lang-select:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
         }
 
-        /* ==================== 3. 主页内容 ==================== */
+        .lang-select option {
+            background-color: #0d0d1a;
+            color: var(--text-main);
+        }
+
+        /* ==================== 2. 主页内容 ==================== */
         #main-content {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: relative;
             width: 100vw;
-            height: 100vh;
-            overflow-y: auto;
+            min-height: 100vh;
             z-index: 5;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 1s ease, visibility 1s ease;
-        }
-
-        #main-content.active {
             opacity: 1;
             visibility: visible;
         }
@@ -333,69 +234,52 @@
 
     <canvas id="bg-canvas"></canvas>
 
-    <div id="warp-flash"></div>
-
-    <div id="portal-container">
-        <div class="breath-ring-wrapper" id="start-btn">
-            <div class="breath-ring">
-                <span class="ring-click-hint">点击开启</span>
-            </div>
-        </div>
-
-        <div class="warp-tunnel" id="tunnel">
-            <div class="achievement-card left" style="top: 25%; transform: translateZ(-800px);">
-                <h4>🏆 突破 1: Spotlight 极速调出</h4>
-                <p>响应零延迟，具备 NOACTIVATE 窗口特性，绝不强占焦点。</p>
-            </div>
-            <div class="achievement-card right" style="top: 45%; transform: translateZ(-1600px);">
-                <h4>🏝️ 突破 2: WinIsland 动态灵动岛</h4>
-                <p>贴合顶栏，融入弹性缓动算法，支持画幅音波与本地专辑封面。</p>
-            </div>
-            <div class="achievement-card left" style="top: 65%; transform: translateZ(-2400px);">
-                <h4>⚓ 突破 3: 全面兼容 Dockfinder</h4>
-                <p>与 Steam 热门组件打通，零冲突实现原生 macOS 级沉浸体验。</p>
-            </div>
-        </div>
+    <div class="lang-switch-container">
+        <select id="langSelect" class="lang-select">
+            <option value="zh_cn">🇨🇳 简体中文</option>
+            <option value="pt_pt">🇵🇹 Português</option>
+            <option value="en_us">🇺🇸 English (US)</option>
+        </select>
     </div>
 
     <div id="main-content">
         <div class="container">
             <header class="hero">
-                <h1>Mac Simulator</h1>
-                <p>在 Windows 上原生还原 macOS 的极致视觉与高效交互</p>
+                <h1 id="heroTitle">Mac Simulator</h1>
+                <p id="heroSubtitle">在 Windows 上原生还原 macOS 的极致视觉与高效交互</p>
 
                 <div class="btn-group">
-                    <a href="https://github.com/steveqwer5-pixel/Mac-Simulator/releases" class="btn btn-primary" target="_blank">
+                    <a href="https://github.com/steveqwer5-pixel/Mac-Simulator/releases" class="btn btn-primary" target="_blank" id="btnDownload">
                         🚀 立即下载最新 Release
                     </a>
-                    <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" class="btn btn-secondary" target="_blank">
+                    <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" class="btn btn-secondary" target="_blank" id="btnRepo">
                         ⭐ GitHub 开源仓库
                     </a>
                 </div>
             </header>
 
-            <h2 class="section-title">核心部件</h2>
+            <h2 class="section-title" id="sectionComponents">核心部件</h2>
             <div class="grid">
                 <div class="card">
                     <div class="card-icon">🔍</div>
                     <h3>Spotlight.exe</h3>
-                    <p>macOS 经典极简快捷搜索悬浮栏，即调即用，轻量纯粹。</p>
+                    <p id="descSpotlight">macOS 经典极简快捷搜索悬浮栏，即调即用，轻量纯粹。</p>
                 </div>
                 <div class="card">
                     <div class="card-icon">🏝️</div>
                     <h3>WinIsland.exe</h3>
-                    <p>顶栏悬浮灵动岛，支持日历、实时时钟与音乐播放控制器。</p>
+                    <p id="descWinIsland">顶栏悬浮灵动岛，支持日历、实时时钟与音乐播放控制器。</p>
                 </div>
                 <div class="card">
                     <div class="card-icon">⚓</div>
-                    <h3>Dockfinder 联动</h3>
-                    <p>推荐配合 Steam 上的 Dockfinder 使用，构建完美的 Mac 桌面体验。</p>
+                    <h3 id="titleDockfinder">Dockfinder 联动</h3>
+                    <p id="descDockfinder">推荐配合 Steam 上的 Dockfinder 使用，构建完美的 Mac 桌面体验。</p>
                 </div>
             </div>
 
             <div class="usage-box">
-                <h3 style="margin-bottom: 16px; font-size: 1.3rem;">💡 快速上手指南</h3>
-                <ol>
+                <h3 style="margin-bottom: 16px; font-size: 1.3rem;" id="titleQuickStart">💡 快速上手指南</h3>
+                <ol id="usageList">
                     <li>点击下方或顶部的 <strong>[立即下载]</strong> 前往 GitHub Releases 页面。</li>
                     <li>直接下载项目仓库中的 <code>WinIsland.exe</code> 与 <code>Spotlight.exe</code>。</li>
                     <li>双击运行即可使用，无需解压或安装，纯绿色软件。</li>
@@ -403,7 +287,7 @@
             </div>
 
             <footer>
-                <p>Designed & Developed by <strong>FireMew0K</strong> | Project hosted on <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" target="_blank">GitHub</a></p>
+                <p><span id="footerText">Designed & Developed by</span> <strong>FireMew0K</strong> | Project hosted on <a href="https://github.com/steveqwer5-pixel/Mac-Simulator" target="_blank">GitHub</a></p>
             </footer>
         </div>
     </div>
@@ -422,7 +306,7 @@
 
         const stars = [];
         const starCount = 280;
-        let speed = 0.5;
+        let speed = 0.8;
 
         for (let i = 0; i < starCount; i++) {
             stars.push({
@@ -467,53 +351,88 @@
         }
         drawStars();
 
-        // 2. 修正后的精确穿越动画逻辑
-        const startBtn = document.getElementById('start-btn');
-        const tunnel = document.getElementById('tunnel');
-        const cards = document.querySelectorAll('.achievement-card');
-        const flash = document.getElementById('warp-flash');
-        const portalContainer = document.getElementById('portal-container');
-        const mainContent = document.getElementById('main-content');
+        // 2. 多语言支持 (i18n)
+        const i18n = {
+            zh_cn: {
+                heroSubtitle: "在 Windows 上原生还原 macOS 的极致视觉与高效交互",
+                btnDownload: "🚀 立即下载最新 Release",
+                btnRepo: "⭐ GitHub 开源仓库",
+                sectionComponents: "核心部件",
+                descSpotlight: "macOS 经典极简快捷搜索悬浮栏，即调即用，轻量纯粹。",
+                descWinIsland: "顶栏悬浮灵动岛，支持日历、实时时钟与音乐播放控制器。",
+                titleDockfinder: "Dockfinder 联动",
+                descDockfinder: "推荐配合 Steam 上的 Dockfinder 使用，构建完美的 Mac 桌面体验。",
+                titleQuickStart: "💡 快速上手指南",
+                usageSteps: [
+                    "点击下方或顶部的 <strong>[立即下载]</strong> 前往 GitHub Releases 页面。",
+                    "直接下载项目仓库中的 <code>WinIsland.exe</code> 与 <code>Spotlight.exe</code>。",
+                    "双击运行即可使用，无需解压或安装，纯绿色软件。"
+                ],
+                footerText: "Designed & Developed by"
+            },
+            pt_pt: {
+                heroSubtitle: "Restaurando nativamente a experiência visual e de interação do macOS no Windows",
+                btnDownload: "🚀 Baixar Último Release",
+                btnRepo: "⭐ Repositório no GitHub",
+                sectionComponents: "Componentes Principais",
+                descSpotlight: "Barra de pesquisa rápida minimalista no estilo macOS, leve e instantânea.",
+                descWinIsland: "Dynamic Island flutuante no topo, suporte a calendário, relógio e controle de música.",
+                titleDockfinder: "Integração Dockfinder",
+                descDockfinder: "Recomendado usar junto com o Dockfinder na Steam para criar a experiência Mac perfeita.",
+                titleQuickStart: "💡 Guia Rápido de Início",
+                usageSteps: [
+                    "Clique em <strong>[Baixar Último Release]</strong> para ir à página de lançamentos do GitHub.",
+                    "Baixe diretamente os arquivos <code>WinIsland.exe</code> e <code>Spotlight.exe</code>.",
+                    "Dê um duplo clique para executar. Sem necessidade de instalação, 100% portátil."
+                ],
+                footerText: "Desenhado e Desenvolvido por"
+            },
+            en_us: {
+                heroSubtitle: "Natively reproducing macOS visuals and efficient interaction on Windows",
+                btnDownload: "🚀 Download Latest Release",
+                btnRepo: "⭐ GitHub Repository",
+                sectionComponents: "Core Components",
+                descSpotlight: "Classic macOS minimalist quick search float bar, instant call and lightweight.",
+                descWinIsland: "Top floating Dynamic Island with calendar, real-time clock, and music media control.",
+                titleDockfinder: "Dockfinder Linkage",
+                descDockfinder: "Recommended to use with Dockfinder on Steam for a complete Mac desktop experience.",
+                titleQuickStart: "💡 Quick Start Guide",
+                usageSteps: [
+                    "Click <strong>[Download Latest Release]</strong> above to visit the GitHub Releases page.",
+                    "Download <code>WinIsland.exe</code> and <code>Spotlight.exe</code> directly from the repository.",
+                    "Double click to run instantly. No installation required, standalone green software."
+                ],
+                footerText: "Designed & Developed by"
+            }
+        };
 
-        startBtn.addEventListener('click', () => {
-            // 淡出光圈
-            startBtn.style.opacity = '0';
-            startBtn.style.pointerEvents = 'none';
+        const langSelect = document.getElementById('langSelect');
 
-            // 显示 3D 隧道（只在点击后激活）
-            tunnel.style.display = 'block';
-            setTimeout(() => { tunnel.style.opacity = '1'; }, 20);
+        function changeLanguage(lang) {
+            const data = i18n[lang] || i18n.zh_cn;
+            
+            document.getElementById('heroSubtitle').innerText = data.heroSubtitle;
+            document.getElementById('btnDownload').innerHTML = data.btnDownload;
+            document.getElementById('btnRepo').innerHTML = data.btnRepo;
+            document.getElementById('sectionComponents').innerText = data.sectionComponents;
+            document.getElementById('descSpotlight').innerText = data.descSpotlight;
+            document.getElementById('descWinIsland').innerText = data.descWinIsland;
+            document.getElementById('titleDockfinder').innerText = data.titleDockfinder;
+            document.getElementById('descDockfinder').innerText = data.descDockfinder;
+            document.getElementById('titleQuickStart').innerText = data.titleQuickStart;
+            document.getElementById('footerText').innerText = data.footerText;
 
-            // 粒子加速
-            let acceleration = setInterval(() => {
-                if (speed < 32) speed += 1.2;
-            }, 50);
+            const usageList = document.getElementById('usageList');
+            usageList.innerHTML = '';
+            data.usageSteps.forEach(stepHtml => {
+                const li = document.createElement('li');
+                li.innerHTML = stepHtml;
+                usageList.appendChild(li);
+            });
+        }
 
-            // 3D 卡片依序推进
-            let posZ = [-1000, -1800, -2600];
-            let warpInterval = setInterval(() => {
-                cards.forEach((card, idx) => {
-                    posZ[idx] += 28;
-                    card.style.transform = `translateZ(${posZ[idx]}px)`;
-                });
-            }, 16);
-
-            // 闪光过场并进入主页
-            setTimeout(() => {
-                flash.style.opacity = '1';
-                setTimeout(() => {
-                    clearInterval(acceleration);
-                    clearInterval(warpInterval);
-                    speed = 0.8;
-                    
-                    portalContainer.style.display = 'none';
-                    mainContent.classList.add('active');
-                    
-                    setTimeout(() => {
-                        flash.style.opacity = '0';
-                    }, 200);
-                }, 400);
-            }, 2400);
+        langSelect.addEventListener('change', (e) => {
+            changeLanguage(e.target.value);
         });
     </script>
 </body>
