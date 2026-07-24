@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<script>
-  // 如果地址栏带有 .html，立刻用 replaceState 抹掉，不刷新页面
-  if (location.pathname.endsWith('.html')) {
-    var cleanPath = location.pathname.replace(/\.html$/, '');
-    if (cleanPath.endsWith('/index')) cleanPath = cleanPath.replace(/\/index$/, '/');
-    history.replaceState(null, '', cleanPath + location.search + location.hash);
-  }
-</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="favicon.png">
     <title>Mac Simulator Wiki</title>
+
+    <script>
+      if (location.pathname.endsWith('.html')) {
+        var cleanPath = location.pathname.replace(/\.html$/, '');
+        if (cleanPath.endsWith('/index')) cleanPath = cleanPath.replace(/\/index$/, '/');
+        history.replaceState(null, '', cleanPath + location.search + location.hash);
+      }
+    </script>
+
     <style>
         :root {
             --bg-black: #0b0f19;
@@ -277,9 +278,9 @@
         </div>
 
         <div class="lang-switch">
-            <button class="lang-btn active" onclick="switchLang('zh')">中文</button>
-            <button class="lang-btn" onclick="switchLang('en')">English</button>
-            <button class="lang-btn" onclick="switchLang('pt')">PT</button>
+            <button class="lang-btn active" onclick="switchLang('zh', event)">中文</button>
+            <button class="lang-btn" onclick="switchLang('en', event)">English</button>
+            <button class="lang-btn" onclick="switchLang('pt', event)">PT</button>
         </div>
     </div>
 
@@ -368,7 +369,7 @@ Mac-Simulator/
 ├── spotlight_cn.png          # Spotlight 效果图 (中文)
 ├── spotlight_us.png          # Spotlight 效果图 (英文)
 ├── spotlight_pt.png          # Spotlight 效果图 (葡萄牙语)
-├── wiki.html                 # 项目说明文档
+├── wiki                      # 项目说明文档
 └── ...
             </pre>
         </section>
@@ -469,13 +470,15 @@ Mac-Simulator/
             }
         };
 
-        function switchLang(lang) {
+        function switchLang(lang, e) {
             const data = i18n[lang];
             if (!data) return;
 
             // 切换按钮高亮状态
             document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (e && e.target) {
+                e.target.classList.add('active');
+            }
 
             // 动态替换文字
             document.getElementById('txt-title').innerText = data.title;
